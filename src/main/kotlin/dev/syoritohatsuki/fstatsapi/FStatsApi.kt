@@ -1,5 +1,7 @@
 package dev.syoritohatsuki.fstatsapi
 
+import com.google.gson.Gson
+import dev.syoritohatsuki.fstatsapi.dto.Metric
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.server.MinecraftServer
@@ -16,23 +18,45 @@ object FStatsApi {
         httpClient.send(
             HttpRequest.newBuilder()
                 .uri(URI.create("https://api.fstats.dev/v1/metrics"))
+                .header("Content-Type", "application/json")
                 .POST(
                     HttpRequest.BodyPublishers.ofString(
-                        """{
-                    "projectId": $projectId,
-                    "isServer": ${false},
-                    "minecraftVersion": ${client.game.version.id},
-                    "modVersion": ${getModVersion(modId)},
-                    "os": ${getOs()}
-                }"""
+                        clientRequestJson(
+                            Metric(
+                                projectId = projectId,
+                                isServer = false,
+                                minecraftVersion = client.game.version.id,
+                                modVersion = getModVersion(modId),
+                                os = getOs()
+                            )
+                        )
                     )
                 )
                 .build(), HttpResponse.BodyHandlers.ofString()
         )
     }
 
-    fun sendServerData(server: MinecraftServer, projectId: Int) {
-
+    fun sendServerData(server: MinecraftServer, projectId: Int, modId: String) {
+        httpClient.send(
+            HttpRequest.newBuilder()
+                .uri(URI.create("https://api.fstats.dev/v1/metrics"))
+                .header("Content-Type", "application/json")
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        serverRequestJson(
+                            Metric(
+                                projectId = projectId,
+                                isServer = true,
+                                minecraftVersion = server.version,
+                                isOnlineMode = server.isOnlineMode,
+                                modVersion = getModVersion(modId),
+                                os = getOs()
+                            )
+                        )
+                    )
+                )
+                .build(), HttpResponse.BodyHandlers.ofString()
+        )
     }
 
     private fun getModVersion(modId: String): String {
@@ -46,5 +70,13 @@ object FStatsApi {
             System.getProperty("os.name").lowercase().contains("mac") -> 'm'
             else -> 'o'
         }
+    }
+
+    private fun clientRequestJson(metric: Metric): String {
+        return Gson().toJson(metric)
+    }
+
+    private fun serverRequestJson(metric: Metric): String {
+        return Gson().toJson(metric)
     }
 }
