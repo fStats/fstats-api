@@ -11,6 +11,8 @@ base {
 val modVersion: String by project
 version = modVersion
 
+val fabricLoaderVersion: String by project
+
 val mavenGroup: String by project
 group = mavenGroup
 
@@ -25,8 +27,7 @@ dependencies {
     val yarnMappings: String by project
     mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
 
-    val loaderVersion: String by project
-    modImplementation("net.fabricmc", "fabric-loader", loaderVersion)
+    modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
 
     val fabricVersion: String by project
     modImplementation("net.fabricmc.fabric-api", "fabric-api", fabricVersion)
@@ -50,7 +51,10 @@ tasks {
 
     processResources {
         inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }
+        inputs.property("loaderVersion", fabricLoaderVersion)
+        filesMatching("fabric.mod.json") {
+            expand(mutableMapOf("version" to project.version, "loaderVersion" to fabricLoaderVersion))
+        }
     }
 
     java {
