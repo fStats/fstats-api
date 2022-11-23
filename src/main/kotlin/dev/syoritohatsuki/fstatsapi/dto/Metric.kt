@@ -7,4 +7,6 @@ data class Metric(
     val isOnlineMode: Boolean? = null,
     val modVersion: String,
     val os: Char
-)
+) {
+    override fun toString(): String = TODO("Readable string of object")
+}
