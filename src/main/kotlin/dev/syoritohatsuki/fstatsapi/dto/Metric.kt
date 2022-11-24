@@ -8,5 +8,9 @@ data class Metric(
     val modVersion: String,
     val os: Char
 ) {
-    override fun toString(): String = TODO("Readable string of object")
+    override fun toString(): String = "Server: $isServer\n" +
+            "Minecraft Version: $minecraftVersion\n" +
+            "OnlineMode: $isOnlineMode\n" +
+            "Mod Version: $modVersion\n" +
+            "OS: $os"
 }
