@@ -13,11 +13,11 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
-object FStatsApi {
+class FStatsApi(private val projectId: Int, private val modId: String) {
 
     private val scheduler = Executors.newScheduledThreadPool(1) { Thread(it, "fStats-Metrics") }
 
-    private fun Metric.sendRequest() {
+    private fun sendMetricRequest(metric: Metric) {
         Runnable {
             scheduler.execute {
                 try {
@@ -25,13 +25,13 @@ object FStatsApi {
                         HttpRequest.newBuilder()
                             .uri(URI.create("https://api.fstats.dev/v1/metrics"))
                             .header("Content-Type", "application/json")
-                            .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(this)))
+                            .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(metric)))
                             .build(),
                         HttpResponse.BodyHandlers.ofString()
                     )
-                    println("Next data sended to fStats: $this")
+                    println("Metric data sent to https://fstats.dev by ${getModName()}")
                 } catch (e: Exception) {
-                    println("Could not submit bStats metrics data: ${e.localizedMessage}")
+                    println("Could not submit fStats metrics data: ${e.localizedMessage}")
                 }
             }
         }.also {
@@ -46,34 +46,68 @@ object FStatsApi {
 
     }
 
-    fun sendClientData(client: MinecraftClient, projectId: Int, modId: String) {
-        Metric(
-            projectId = projectId,
-            isServer = false,
-            minecraftVersion = client.game.version.id,
-            modVersion = getModVersion(modId),
-            os = getOs()
-        ).sendRequest()
+    fun sendClientData(client: MinecraftClient) {
+        sendMetricRequest(
+            Metric(
+                projectId = projectId,
+                isServer = false,
+                minecraftVersion = client.game.version.id,
+                modVersion = getModVersion(),
+                os = getOs()
+            )
+        )
     }
 
-    fun sendServerData(server: MinecraftServer, projectId: Int, modId: String) {
-        Metric(
-            projectId = projectId,
-            isServer = true,
-            minecraftVersion = server.version,
-            isOnlineMode = server.isOnlineMode,
-            modVersion = getModVersion(modId),
-            os = getOs()
-        ).sendRequest()
+    fun sendServerData(server: MinecraftServer) {
+        if (server.isDedicated) {
+            sendMetricRequest(
+                Metric(
+                    projectId = projectId,
+                    isServer = true,
+                    minecraftVersion = server.version,
+                    isOnlineMode = server.isOnlineMode,
+                    modVersion = getModVersion(),
+                    os = getOs()
+                )
+            )
+        }
     }
 
-    private fun getModVersion(modId: String): String =
+    fun sendExceptionData(e: Exception) {
+        try {
+            HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.fstats.dev/v1/exceptions"))
+                    .header("Content-Type", "application/json")
+                    .POST(
+                        HttpRequest.BodyPublishers.ofString(
+                            Gson().toJson(
+                                dev.syoritohatsuki.fstatsapi.dto.Exception(
+                                    projectId,
+                                    e.stackTrace.joinToString("\n")
+                                )
+                            )
+                        )
+                    )
+                    .build(),
+                HttpResponse.BodyHandlers.ofString()
+            )
+            println("Exception sent to https://fstats.dev by ${getModName()}")
+        } catch (e: Exception) {
+            println("Could not submit fStats exception data: ${e.localizedMessage}")
+        }
+    }
+
+    private fun getModName(): String =
+        FabricLoader.getInstance().getModContainer(modId).get().metadata.name
+
+    private fun getModVersion(): String =
         FabricLoader.getInstance().getModContainer(modId).get().metadata.version.friendlyString
 
     private fun getOs(): Char = when {
-        System.getProperty("os.name").lowercase().contains("windows") -> 'w'
-        System.getProperty("os.name").lowercase().contains("linux") -> 'l'
-        System.getProperty("os.name").lowercase().contains("mac") -> 'm'
+        System.getProperty("os.name").contains("windows", true) -> 'w'
+        System.getProperty("os.name").contains("linux", true) -> 'l'
+        System.getProperty("os.name").contains("mac", true) -> 'm'
         else -> 'o'
     }
 }
