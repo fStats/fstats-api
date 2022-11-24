@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "fstatsapi",
   "version": "${version}",
-  "name": "fStatsAPI",
-  "description": "Fabric mod metric",
+  "name": "fStats API",
+  "description": "Fabric metric",
   "authors": [
     "Syorito Hatsuki"
   ],
@@ -11,13 +11,6 @@
     "homepage": "https://fstats.dev/"
   },
   "license": "MIT Licence",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "dev.syoritohatsuki.fstatsapi.FStatsApiMain"
-    ]
-  },
-  "mixins": [],
   "custom": {
     "modmenu": {
       "links": {
