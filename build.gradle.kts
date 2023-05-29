@@ -16,10 +16,6 @@ val fabricLoaderVersion: String by project
 val mavenGroup: String by project
 group = mavenGroup
 
-repositories {
-
-}
-
 dependencies {
     val minecraftVersion: String by project
     minecraft("com.mojang", "minecraft", minecraftVersion)
@@ -28,9 +24,6 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
 
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
-
-    val fabricVersion: String by project
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", fabricVersion)
 }
 
 tasks {
@@ -47,13 +40,18 @@ tasks {
         kotlinOptions { jvmTarget = javaVersion.toString() }
     }
 
-    jar { from("LICENSE") { rename { "${it}_${base.archivesName}" } } }
+    jar {
+        from("LICENSE")
+    }
 
     processResources {
-        inputs.property("version", project.version)
-        inputs.property("loaderVersion", fabricLoaderVersion)
         filesMatching("fabric.mod.json") {
-            expand(mutableMapOf("version" to project.version, "loaderVersion" to fabricLoaderVersion))
+            expand(
+                mutableMapOf(
+                    "version" to project.version,
+                    "loaderVersion" to fabricLoaderVersion
+                )
+            )
         }
     }
 

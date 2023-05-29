@@ -11,6 +11,7 @@
     "homepage": "https://fstats.dev/"
   },
   "license": "MIT Licence",
+  "environment": "server",
   "custom": {
     "modmenu": {
       "links": {
@@ -23,7 +24,6 @@
   },
   "depends": {
     "fabricloader": ">=${loaderVersion}",
-    "fabric": "*",
     "minecraft": ">=1.13",
     "java": ">=17"
   }
