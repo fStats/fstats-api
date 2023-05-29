@@ -2,10 +2,14 @@ package dev.syoritohatsuki.fstatsapi
 
 import com.google.gson.Gson
 import dev.syoritohatsuki.fstatsapi.dto.Metric
+import dev.syoritohatsuki.fstatsapi.dto.Metrics
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.MinecraftClient
-import net.minecraft.server.MinecraftServer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.URI
+import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -13,101 +17,76 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
-class FStatsApi(private val projectId: Int, private val modId: String) {
+object FStatsApi {
 
-    private val scheduler = Executors.newScheduledThreadPool(1) { Thread(it, "fStats-Metrics") }
+    private val logger: Logger = LoggerFactory.getLogger(FStatsApi::class.java)
 
-    private fun sendMetricRequest(metric: Metric) {
-        Runnable {
+    private val scheduler = Executors.newScheduledThreadPool(1) {
+        Thread(it, "fStats-Metrics")
+    }
+
+    fun sendMetricRequest(version: String, onlineMode: Boolean) {
+        val runnable = Runnable {
             scheduler.execute {
                 try {
                     HttpClient.newHttpClient().send(
                         HttpRequest.newBuilder()
-                            .uri(URI.create("https://api.fstats.dev/v1/metrics"))
+                            .uri(URI.create("http://localhost:1540/v2/metrics"))
                             .header("Content-Type", "application/json")
-                            .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(metric)))
+                            .header("User-Agent", "fstats-api")
+                            .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(requestBody(version, onlineMode))))
                             .build(),
                         HttpResponse.BodyHandlers.ofString()
                     )
-                    println("Metric data sent to https://fstats.dev by ${getModName()}")
+
+                    logger.info("Metric data sent to https://fstats.dev")
                 } catch (e: Exception) {
-                    println("Could not submit fStats metrics data: ${e.localizedMessage}")
+                    logger.error("Could not submit fStats metrics data: ${e.localizedMessage}")
                 }
             }
-        }.also {
-            (1000 * 60 * (3 + Math.random() * 3)).toLong().apply {
-                scheduler.schedule(it, this, TimeUnit.MILLISECONDS)
-                scheduler.scheduleAtFixedRate(
-                    it, this + (1000 * 60 * (Math.random() * 30)).toLong(),
-                    (1000 * 60 * 30).toLong(), TimeUnit.MILLISECONDS
+        }
+        (1000 * 60 * (3 + Math.random() * 3)).toLong().apply {
+            scheduler.schedule(runnable, this, TimeUnit.MILLISECONDS)
+            scheduler.scheduleAtFixedRate(
+                runnable,
+                this + (1000 * 60 * (Math.random() * 30)).toLong(),
+                (1000 * 60 * 30).toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        }
+    }
+
+    private fun requestBody(version: String, onlineMode: Boolean): Metrics = Metrics(
+        mutableMapOf<Int, String>().apply {
+            FabricLoader.getInstance().allMods.forEach {
+                put(
+                    it.metadata.customValues["fstats"]?.asNumber?.toInt() ?: return@forEach,
+                    it.metadata.version.friendlyString
                 )
             }
-        }
+        }, Metric(version, onlineMode, getOs(), getLocation())
+    )
 
-    }
-
-    fun sendClientData(client: MinecraftClient) {
-        sendMetricRequest(
-            Metric(
-                projectId = projectId,
-                isServer = false,
-                minecraftVersion = client.game.version.id,
-                modVersion = getModVersion(),
-                os = getOs()
-            )
-        )
-    }
-
-    fun sendServerData(server: MinecraftServer) {
-        if (server.isDedicated) {
-            sendMetricRequest(
-                Metric(
-                    projectId = projectId,
-                    isServer = true,
-                    minecraftVersion = server.version,
-                    isOnlineMode = server.isOnlineMode,
-                    modVersion = getModVersion(),
-                    os = getOs()
-                )
-            )
+    private fun getOs(): Char {
+        val osName = System.getProperty("os.name").lowercase()
+        return when {
+            osName.contains("windows") -> 'w'
+            osName.contains("linux") -> 'l'
+            osName.contains("mac") -> 'm'
+            else -> 'o'
         }
     }
 
-    fun sendExceptionData(e: Exception) {
+    private fun getLocation(): String {
         try {
-            HttpClient.newHttpClient().send(
-                HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.fstats.dev/v1/exceptions"))
-                    .header("Content-Type", "application/json")
-                    .POST(
-                        HttpRequest.BodyPublishers.ofString(
-                            Gson().toJson(
-                                dev.syoritohatsuki.fstatsapi.dto.Exception(
-                                    projectId,
-                                    e.stackTrace.joinToString("\n")
-                                )
-                            )
-                        )
-                    )
-                    .build(),
-                HttpResponse.BodyHandlers.ofString()
-            )
-            println("Exception sent to https://fstats.dev by ${getModName()}")
+            BufferedReader(InputStreamReader(URL("https://checkip.amazonaws.com/").openStream())).use { ip ->
+                BufferedReader(InputStreamReader(URL("https://ip2c.org/" + ip.readLine()).openStream())).use { location ->
+                    return location.readLine().split(';')[3]
+                }
+            }
         } catch (e: Exception) {
-            println("Could not submit fStats exception data: ${e.localizedMessage}")
+            logger.warn("Can't convert IP to location: " + e.localizedMessage)
+            return "unknown"
         }
-    }
-
-    private fun getModName(): String =
-        FabricLoader.getInstance().getModContainer(modId).get().metadata.name
-
-    private fun getModVersion(): String =
-        FabricLoader.getInstance().getModContainer(modId).get().metadata.version.friendlyString
-
-    private fun getOs(): Char = when {
-        System.getProperty("os.name").contains("windows", true) -> 'w'
-        System.getProperty("os.name").contains("linux", true) -> 'l'
-        System.getProperty("os.name").contains("mac", true) -> 'm'
-        else -> 'o'
     }
 }
