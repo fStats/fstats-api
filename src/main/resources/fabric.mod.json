@@ -20,8 +20,12 @@
       "badges": [
         "library"
       ]
-    }
+    },
+    "fstats": 1
   },
+  "mixins": [
+    "fstatsapi.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loaderVersion}",
     "minecraft": ">=1.13",
