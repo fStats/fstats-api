@@ -30,13 +30,10 @@ object FStatsApi {
             scheduler.execute {
                 try {
                     HttpClient.newHttpClient().send(
-                        HttpRequest.newBuilder()
-                            .uri(URI.create("http://localhost:1540/v2/metrics"))
-                            .header("Content-Type", "application/json")
-                            .header("User-Agent", "fstats-api")
+                        HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics"))
+                            .header("Content-Type", "application/json").header("User-Agent", "fstats-api")
                             .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(requestBody(version, onlineMode))))
-                            .build(),
-                        HttpResponse.BodyHandlers.ofString()
+                            .build(), HttpResponse.BodyHandlers.ofString()
                     )
 
                     logger.info("Metric data sent to https://fstats.dev")
@@ -64,7 +61,14 @@ object FStatsApi {
                     it.metadata.version.friendlyString
                 )
             }
-        }, Metric(version, onlineMode, getOs(), getLocation())
+        }, Metric(
+            version,
+            onlineMode,
+            getOs(),
+            getLocation(),
+            (FabricLoader.getInstance().getModContainer("fabric-api").get().metadata.version.friendlyString)
+                ?: "unknown"
+        )
     )
 
     private fun getOs(): Char {

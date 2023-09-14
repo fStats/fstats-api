@@ -4,7 +4,8 @@ data class Metric(
     val minecraftVersion: String,
     val isOnlineMode: Boolean,
     val os: Char,
-    val location: String
+    val location: String,
+    val fabricApiVersion: String
 )
 
 data class Metrics(
