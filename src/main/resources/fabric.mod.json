@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "fstatsapi",
+  "id": "fstats-api",
   "version": "${version}",
   "name": "fStats API",
   "description": "Fabric metric",
@@ -13,14 +13,6 @@
   "license": "MIT Licence",
   "environment": "server",
   "custom": {
-    "modmenu": {
-      "links": {
-        "modmenu.discord": "https://discord.gg/pbwnMwnUD6"
-      },
-      "badges": [
-        "library"
-      ]
-    },
     "fstats": 1
   },
   "mixins": [
