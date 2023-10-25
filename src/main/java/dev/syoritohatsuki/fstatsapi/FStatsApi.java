@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class FStatsApi {
 
+    public static final String MOD_ID = "fstats-api";
     private static final Logger logger = LoggerFactory.getLogger(FStatsApi.class);
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
