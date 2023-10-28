@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 import static dev.syoritohatsuki.fstatsapi.FStatsApi.MOD_ID;
 
-final class UpgradesConfig {
+public final class ConfigManager {
 
     private final File configDir = Paths.get("", "config", MOD_ID).toFile();
 
@@ -18,7 +18,7 @@ final class UpgradesConfig {
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public UpgradesConfig() {
+    public ConfigManager() {
         if (!configDir.exists()) configDir.mkdirs();
         if (!configFile.exists()) {
             try {
