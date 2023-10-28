@@ -1,6 +1,7 @@
 package dev.syoritohatsuki.fstatsapi;
 
 import com.google.gson.Gson;
+import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.dto.Metrics;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class FStatsApi {
 
     public static final String MOD_ID = "fstats-api";
-    private static final Logger logger = LoggerFactory.getLogger(FStatsApi.class);
+    public static final Logger logger = LoggerFactory.getLogger(FStatsApi.class);
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void sendMetricRequest(String version, boolean onlineMode) {
@@ -74,6 +75,9 @@ public class FStatsApi {
     }
 
     private static String getLocation() {
+
+        if (ConfigManager.read().hideLocation()) return "unknown";
+
         try {
             URL ip = new URL("https://checkip.amazonaws.com/");
             URL location = new URL("https://ip2c.org/" + new BufferedReader(new InputStreamReader(ip.openStream())).readLine());

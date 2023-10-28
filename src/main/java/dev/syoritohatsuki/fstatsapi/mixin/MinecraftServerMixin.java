@@ -1,6 +1,7 @@
 package dev.syoritohatsuki.fstatsapi.mixin;
 
 import dev.syoritohatsuki.fstatsapi.FStatsApi;
+import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +20,8 @@ public abstract class MinecraftServerMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;createMetadata()Lnet/minecraft/server/ServerMetadata;", ordinal = 0), method = "runServer")
     private void afterSetupServer(CallbackInfo info) {
-        FStatsApi.sendMetricRequest(getVersion(), isOnlineMode());
+        if (ConfigManager.read().enabled()) {
+            FStatsApi.sendMetricRequest(getVersion(), isOnlineMode());
+        }
     }
 }
