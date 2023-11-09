@@ -134,6 +134,11 @@ Setup project
 
 Done, now when any server uses your mod and if they don't disable fStats, you are going to get data about that on [website](https://fstats.dev)
 
+Also, recommend adding the badge to your project description to notify users that you collect information. 
+
+*Resize badge to any size that you want*
+![Badge](https://cdn.modrinth.com/data/DkOr2M32/images/597e8bc81f48ad606ae5624f566994dde65ac409.png)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap
