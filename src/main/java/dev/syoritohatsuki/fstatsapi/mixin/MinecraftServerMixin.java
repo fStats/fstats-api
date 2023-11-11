@@ -20,6 +20,8 @@ public abstract class MinecraftServerMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;createMetadata()Lnet/minecraft/server/ServerMetadata;", ordinal = 0), method = "runServer")
     private void afterSetupServer(CallbackInfo info) {
+        ConfigManager.init();
+
         if (ConfigManager.read().enabled()) {
             FStatsApi.sendMetricRequest(getVersion(), isOnlineMode());
         }

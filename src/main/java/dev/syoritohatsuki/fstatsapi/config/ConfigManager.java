@@ -14,12 +14,11 @@ import static dev.syoritohatsuki.fstatsapi.FStatsApi.logger;
 public final class ConfigManager {
 
     private static final File configDir = Paths.get("", "config", MOD_ID).toFile();
-
     private static final File configFile = new File(configDir, "config.json");
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public ConfigManager() {
+    public static void init() {
         if (!configDir.exists()) configDir.mkdirs();
         if (!configFile.exists()) {
             try {
@@ -35,7 +34,7 @@ public final class ConfigManager {
         try {
             return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
         } catch (IOException e) {
-            logger.error("Can't read config");
+            logger.error("Can't read config or it don't exist");
             try {
                 logger.info("Backup config...");
                 Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
