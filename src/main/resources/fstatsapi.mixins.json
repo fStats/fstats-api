@@ -6,6 +6,6 @@
     "defaultRequire": 1
   },
   "server": [
-    "MinecraftServerMixin"
+    "MinecraftDedicatedServerMixin"
   ]
 }
