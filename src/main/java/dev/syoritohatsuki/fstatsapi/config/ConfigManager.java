@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -24,7 +23,7 @@ public final class ConfigManager {
             try {
                 configFile.createNewFile();
                 Files.writeString(configFile.toPath(), gson.toJson(new Config(true, false)));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -33,20 +32,34 @@ public final class ConfigManager {
     public static Config read() {
         try {
             return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Can't read config or it don't exist");
             try {
                 logger.info("Backup config...");
                 Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
                 Files.writeString(configFile.toPath(), gson.toJson(new Config(true, false)));
                 return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
 
-    public record Config(Boolean enabled, Boolean hideLocation) {
+    public static final class Config {
+        private final Boolean enabled;
+        private final Boolean hideLocation;
 
+        public Config(Boolean enabled, Boolean hideLocation) {
+            this.enabled = enabled;
+            this.hideLocation = hideLocation;
+        }
+
+        public Boolean enabled() {
+            return enabled;
+        }
+
+        public Boolean hideLocation() {
+            return hideLocation;
+        }
     }
 }
