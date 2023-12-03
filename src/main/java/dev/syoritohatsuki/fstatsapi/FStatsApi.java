@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.dto.Metrics;
 import net.fabricmc.loader.api.FabricLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class FStatsApi {
 
     public static final String MOD_ID = "fstats-api";
-    public static final Logger logger = LoggerFactory.getLogger(FStatsApi.class);
+    public static final Logger logger = LogManager.getLogger();
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void sendMetricRequest(String version, boolean onlineMode) {
