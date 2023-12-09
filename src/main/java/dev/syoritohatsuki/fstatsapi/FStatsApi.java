@@ -66,15 +66,10 @@ public class FStatsApi {
 
     private static char getOs() {
         String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.contains("windows")) {
-            return 'w';
-        } else if (osName.contains("linux")) {
-            return 'l';
-        } else if (osName.contains("mac")) {
-            return 'm';
-        } else {
-            return 'o';
-        }
+        if (osName.contains("windows")) return 'w';
+        else if (osName.contains("linux")) return 'l';
+        else if (osName.contains("mac")) return 'm';
+        else return 'o';
     }
 
     private static String getLocation() {
