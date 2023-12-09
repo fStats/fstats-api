@@ -31,21 +31,18 @@ public class FStatsApi {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void sendMetricRequest(String version, boolean onlineMode) {
-        Runnable runnable = () -> scheduler.execute(() -> {
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextStepTime = now.truncatedTo(ChronoUnit.HOURS).plusMinutes(30);
+        if (now.isAfter(nextStepTime)) nextStepTime = nextStepTime.plusMinutes(30);
+        scheduler.scheduleAtFixedRate(() -> {
             try {
                 HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", "fstats-api").POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
                 logger.info("Metric data sent to https://fstats.dev");
             } catch (Exception e) {
                 logger.error("Could not submit fStats metrics data: " + e.getLocalizedMessage());
             }
-        });
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextStepTime = now.truncatedTo(ChronoUnit.HOURS).plusMinutes(30);
-        if (now.isAfter(nextStepTime)) {
-            nextStepTime = nextStepTime.plusMinutes(30);
-        }
-        scheduler.scheduleAtFixedRate(runnable, Duration.between(now, nextStepTime).toMillis(), TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES), TimeUnit.MILLISECONDS);
+        }, Duration.between(now, nextStepTime).toMillis(), TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES), TimeUnit.MILLISECONDS);
     }
 
     private static Metrics requestBody(String version, boolean onlineMode) {
