@@ -15,6 +15,9 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -37,12 +40,12 @@ public class FStatsApi {
             }
         });
 
-        long initialDelay = (long) (1000 * 60 * (3 + Math.random() * 3));
-        long periodicDelay = (long) (1000 * 60 * (Math.random() * 30));
-        long fixedRate = (1000 * 60 * 30);
-
-        scheduler.schedule(runnable, initialDelay, TimeUnit.MILLISECONDS);
-        scheduler.scheduleAtFixedRate(runnable, initialDelay + periodicDelay, fixedRate, TimeUnit.MILLISECONDS);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextStepTime = now.truncatedTo(ChronoUnit.HOURS).plusMinutes(30);
+        if (now.isAfter(nextStepTime)) {
+            nextStepTime = nextStepTime.plusMinutes(30);
+        }
+        scheduler.scheduleAtFixedRate(runnable, Duration.between(now, nextStepTime).toMillis(), TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES), TimeUnit.MILLISECONDS);
     }
 
     private static Metrics requestBody(String version, boolean onlineMode) {
