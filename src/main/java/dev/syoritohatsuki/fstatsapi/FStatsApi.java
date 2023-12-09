@@ -31,16 +31,19 @@ public class FStatsApi {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void sendMetricRequest(String version, boolean onlineMode) {
-
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextStepTime = now.truncatedTo(ChronoUnit.HOURS).plusMinutes(30);
         if (now.isAfter(nextStepTime)) nextStepTime = nextStepTime.plusMinutes(30);
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", "fstats-api").POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
-                logger.info("Metric data sent to https://fstats.dev");
+                if (ConfigManager.read().getMessages().isInfosEnabled()) {
+                    logger.info("Metric data sent to https://fstats.dev");
+                }
             } catch (Exception e) {
-                logger.error("Could not submit fStats metrics data: " + e.getLocalizedMessage());
+                if (ConfigManager.read().getMessages().isErrorsEnabled()) {
+                    logger.error("Could not submit fStats metrics data: " + e.getLocalizedMessage());
+                }
             }
         }, Duration.between(now, nextStepTime).toMillis(), TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES), TimeUnit.MILLISECONDS);
     }
@@ -76,7 +79,7 @@ public class FStatsApi {
 
     private static String getLocation() {
 
-        if (ConfigManager.read().hideLocation()) return "unknown";
+        if (ConfigManager.read().isLocationHide()) return "unknown";
 
         try {
             URL ip = new URL("https://checkip.amazonaws.com/");
@@ -84,7 +87,9 @@ public class FStatsApi {
             String response = new BufferedReader(new InputStreamReader(location.openStream())).readLine();
             return response.split(";")[3];
         } catch (IOException e) {
-            logger.warn("Can't convert IP to location: " + e.getLocalizedMessage());
+            if (ConfigManager.read().getMessages().isWarningsEnabled()) {
+                logger.warn("Can't convert IP to location: " + e.getLocalizedMessage());
+            }
             return "unknown";
         }
     }
