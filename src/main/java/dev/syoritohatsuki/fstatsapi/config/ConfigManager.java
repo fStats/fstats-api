@@ -22,7 +22,6 @@ public final class ConfigManager {
     private static final Config defaultConfig = new Config(1, true, false, new Config.Messages(true, true, true));
 
     public static void init() {
-        LogManager.logger.warn(configFile.getAbsolutePath());
         if (!configDir.exists() && !configDir.mkdirs()) {
             LogManager.logger.warn("Can't create config dirs");
         }
