@@ -3,9 +3,8 @@ package dev.syoritohatsuki.fstatsapi;
 import com.google.gson.Gson;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.dto.Metrics;
+import dev.syoritohatsuki.fstatsapi.logs.LogManager;
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,37 +14,46 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class FStatsApi {
 
     public static final String MOD_ID = "fstats-api";
-    public static final Logger logger = LogManager.getLogger();
+
+    private static final int requestSendDelay = 1000 * 60 * 30;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void sendMetricRequest(String version, boolean onlineMode) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextStepTime = now.truncatedTo(ChronoUnit.HOURS).plusMinutes(30);
-        if (now.isAfter(nextStepTime)) nextStepTime = nextStepTime.plusMinutes(30);
+
+        long now = System.currentTimeMillis();
+        long nextStepTime = now;
+
+        var log = LogManager.getLatestLog();
+        long lastRequest = (log != null) ? Long.parseLong(log.split(",")[0]) : now;
+
+        long diff = now - lastRequest;
+        if (diff > 0 && diff < requestSendDelay) {
+            nextStepTime = nextStepTime + TimeUnit.MINUTES.toMillis(ThreadLocalRandom.current().nextInt(30, 41)) - diff;
+        }
+
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", "fstats-api").POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
+                HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", MOD_ID).POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
-                    logger.info("Metric data sent to https://fstats.dev");
+                    LogManager.info("Metric data sent to https://fstats.dev");
                 }
             } catch (Exception e) {
                 if (ConfigManager.read().getMessages().isErrorsEnabled()) {
-                    logger.error("Could not submit fStats metrics data: " + e.getLocalizedMessage());
+                    LogManager.error("Could not submit fStats metrics data");
+                    LogManager.getLogFreeLogger().error(e);
                 }
             }
-        }, Duration.between(now, nextStepTime).toMillis(), TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES), TimeUnit.MILLISECONDS);
+        }, nextStepTime - now, requestSendDelay, TimeUnit.MILLISECONDS);
     }
 
     private static Metrics requestBody(String version, boolean onlineMode) {
@@ -61,7 +69,7 @@ public class FStatsApi {
     }
 
     private static String getFabricApiVersion() {
-        return FabricLoader.getInstance().getModContainer("fabric-api").map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
+        return FabricLoader.getInstance().getModContainer(MOD_ID).map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
     }
 
     private static char getOs() {
@@ -83,7 +91,8 @@ public class FStatsApi {
             return response.split(";")[3];
         } catch (IOException e) {
             if (ConfigManager.read().getMessages().isWarningsEnabled()) {
-                logger.warn("Can't convert IP to location: " + e.getLocalizedMessage());
+                LogManager.warn("Can't convert IP to location");
+                LogManager.getLogFreeLogger().warn(e);
             }
             return "unknown";
         }

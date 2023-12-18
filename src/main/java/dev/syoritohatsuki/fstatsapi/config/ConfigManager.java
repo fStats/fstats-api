@@ -2,6 +2,7 @@ package dev.syoritohatsuki.fstatsapi.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dev.syoritohatsuki.fstatsapi.logs.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 import static dev.syoritohatsuki.fstatsapi.FStatsApi.MOD_ID;
-import static dev.syoritohatsuki.fstatsapi.FStatsApi.logger;
 
 public final class ConfigManager {
 
@@ -22,6 +22,7 @@ public final class ConfigManager {
     private static final Config defaultConfig = new Config(1, true, false, new Config.Messages(true, true, true));
 
     public static void init() {
+        LogManager.getLogFreeLogger().warn(configFile.getAbsolutePath());
         if (!configDir.exists()) configDir.mkdirs();
         if (!configFile.exists()) {
             try {
@@ -33,7 +34,7 @@ public final class ConfigManager {
         }
         if (!Objects.equals(read().getVersion(), defaultConfig.getVersion())) {
             try {
-                logger.warn("Looks like config is deprecated... Updating...");
+                LogManager.warn("Looks like config is deprecated... Updating...");
 
                 var enabled = read().isEnabled() == null || read().isEnabled();
                 var hideLocation = read().isLocationHide() != null && read().isLocationHide();
@@ -50,9 +51,9 @@ public final class ConfigManager {
         try {
             return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
         } catch (Exception e) {
-            logger.error("Can't read config or it don't exist");
+            LogManager.error("Can't read config or it don't exist");
             try {
-                logger.info("Backup config...");
+                LogManager.info("Backup config...");
                 Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
                 Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
                 return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
