@@ -44,11 +44,11 @@ public class FStatsApi {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", MOD_ID).POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
+                var message = "Metric data sent to https://fstats.dev";
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
-                    var message = "Metric data sent to https://fstats.dev";
                     LogManager.logger.info(message);
-                    LogManager.writeLog(message);
                 }
+                LogManager.writeLog(message);
             } catch (Exception e) {
                 if (ConfigManager.read().getMessages().isErrorsEnabled()) {
                     LogManager.logger.error("Could not submit fStats metrics data");
