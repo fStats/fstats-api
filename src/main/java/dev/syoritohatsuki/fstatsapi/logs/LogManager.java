@@ -25,7 +25,7 @@ public class LogManager {
         if (logFile.exists()) return;
 
         try {
-            if (logFile.createNewFile()) logger.warn("Can't create log file");
+            if (!logFile.createNewFile()) logger.warn("Can't create log file");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

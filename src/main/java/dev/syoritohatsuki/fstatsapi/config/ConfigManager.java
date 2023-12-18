@@ -23,15 +23,22 @@ public final class ConfigManager {
 
     public static void init() {
         LogManager.getLogFreeLogger().warn(configFile.getAbsolutePath());
-        if (!configDir.exists()) configDir.mkdirs();
+        if (configDir.exists()) {
+            if (!configDir.mkdirs()) LogManager.getLogFreeLogger().warn("Can't create config dirs");
+        }
+
         if (!configFile.exists()) {
             try {
-                configFile.createNewFile();
+                if (!configFile.createNewFile()) {
+                    LogManager.getLogFreeLogger().warn("Can't create config file");
+                    return;
+                }
                 Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+
         if (!Objects.equals(read().getVersion(), defaultConfig.getVersion())) {
             try {
                 LogManager.warn("Looks like config is deprecated... Updating...");
