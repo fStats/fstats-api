@@ -12,13 +12,8 @@ import static org.apache.logging.log4j.LogManager.getLogger;
 
 public class LogManager {
 
-    private enum Level {
-        ERROR, INFO, WARN
-    }
-
     private static final File logFile = Paths.get("fstats.log").toFile();
-
-    private static final Logger logger = getLogger();
+    public static final Logger logger = getLogger();
     private static final long now = System.currentTimeMillis();
 
     public static void init() {
@@ -29,25 +24,6 @@ public class LogManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static Logger getLogFreeLogger() {
-        return logger;
-    }
-
-    public static void info(String message) {
-        logger.info(message);
-        writeLog(Level.INFO, message);
-    }
-
-    public static void warn(String message) {
-        logger.warn(message);
-        writeLog(Level.WARN, message);
-    }
-
-    public static void error(String message) {
-        logger.error(message);
-        writeLog(Level.ERROR, message);
     }
 
     public static String getLatestLog() {
@@ -64,14 +40,14 @@ public class LogManager {
         }
     }
 
-    private static void writeLog(Level level, String message) {
+    public static void writeLog(String message) {
         if (!logFile.canWrite()) {
             logger.warn("Can't access to log file");
             return;
         }
 
         try (FileWriter fileWriter = new FileWriter(logFile, true)) {
-            fileWriter.write(now + "," + level + "," + message + System.lineSeparator());
+            fileWriter.write(now + "," + message + System.lineSeparator());
         } catch (IOException e) {
             logger.warn("Can't write log to file");
             logger.warn(e);

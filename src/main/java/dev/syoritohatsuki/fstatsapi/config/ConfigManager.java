@@ -22,15 +22,15 @@ public final class ConfigManager {
     private static final Config defaultConfig = new Config(1, true, false, new Config.Messages(true, true, true));
 
     public static void init() {
-        LogManager.getLogFreeLogger().warn(configFile.getAbsolutePath());
+        LogManager.logger.warn(configFile.getAbsolutePath());
         if (!configDir.exists() && !configDir.mkdirs()) {
-            LogManager.getLogFreeLogger().warn("Can't create config dirs");
+            LogManager.logger.warn("Can't create config dirs");
         }
 
         if (!configFile.exists()) {
             try {
                 if (!configFile.createNewFile()) {
-                    LogManager.getLogFreeLogger().warn("Can't create config file");
+                    LogManager.logger.warn("Can't create config file");
                     return;
                 }
                 Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
@@ -41,7 +41,7 @@ public final class ConfigManager {
 
         if (!Objects.equals(read().getVersion(), defaultConfig.getVersion())) {
             try {
-                LogManager.getLogFreeLogger().warn("Looks like config is deprecated... Updating...");
+                LogManager.logger.warn("Looks like config is deprecated... Updating...");
 
                 var enabled = read().isEnabled() == null || read().isEnabled();
                 var hideLocation = read().isLocationHide() != null && read().isLocationHide();
@@ -58,9 +58,9 @@ public final class ConfigManager {
         try {
             return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
         } catch (Exception e) {
-            LogManager.getLogFreeLogger().error("Can't read config or it don't exist");
+            LogManager.logger.error("Can't read config or it don't exist");
             try {
-                LogManager.getLogFreeLogger().info("Backup config...");
+                LogManager.logger.info("Backup config...");
                 Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
                 Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
                 return gson.fromJson(Files.readString(configFile.toPath()), Config.class);

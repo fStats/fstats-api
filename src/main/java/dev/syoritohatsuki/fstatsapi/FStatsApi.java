@@ -45,12 +45,14 @@ public class FStatsApi {
             try {
                 HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(URI.create("https://api.fstats.dev/v2/metrics")).header("Content-Type", "application/json").header("User-Agent", MOD_ID).POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(requestBody(version, onlineMode)))).build(), HttpResponse.BodyHandlers.ofString());
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
-                    LogManager.info("Metric data sent to https://fstats.dev");
+                    var message = "Metric data sent to https://fstats.dev";
+                    LogManager.logger.info(message);
+                    LogManager.writeLog(message);
                 }
             } catch (Exception e) {
                 if (ConfigManager.read().getMessages().isErrorsEnabled()) {
-                    LogManager.error("Could not submit fStats metrics data");
-                    LogManager.getLogFreeLogger().error(e);
+                    LogManager.logger.error("Could not submit fStats metrics data");
+                    LogManager.logger.error(e);
                 }
             }
         }, nextStepTime - now, requestSendDelay, TimeUnit.MILLISECONDS);
@@ -91,8 +93,8 @@ public class FStatsApi {
             return response.split(";")[3];
         } catch (IOException e) {
             if (ConfigManager.read().getMessages().isWarningsEnabled()) {
-                LogManager.warn("Can't convert IP to location");
-                LogManager.getLogFreeLogger().warn(e);
+                LogManager.logger.warn("Can't convert IP to location");
+                LogManager.logger.warn(e);
             }
             return "unknown";
         }

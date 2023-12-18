@@ -21,10 +21,10 @@ public abstract class MinecraftDedicatedServerMixin {
 
         if (!ConfigManager.read().isEnabled()) return;
 
-        LogManager.getLogFreeLogger().info("-----[ \u001B[36m\u001B[1mfStats\u001B[0m ]-----");
-        LogManager.getLogFreeLogger().info("\u001B[33mOn server exist mod that collect metric data about mods usage for few author\u001B[0m");
-        LogManager.getLogFreeLogger().info("\u001B[33mThat mod work like bStats, no need to panic. You can disable it config if you want\u001B[0m");
-        LogManager.getLogFreeLogger().info("--------------------");
+        LogManager.logger.info("-----[ \u001B[36m\u001B[1mfStats\u001B[0m ]-----");
+        LogManager.logger.info("\u001B[33mOn server exist mod that collect metric data about mods usage for few author\u001B[0m");
+        LogManager.logger.info("\u001B[33mThat mod work like bStats, no need to panic. You can disable it config if you want\u001B[0m");
+        LogManager.logger.info("--------------------");
 
         FStatsApi.sendMetricRequest(((MinecraftServer) (Object) this).getVersion(), ((MinecraftServer) (Object) this).isOnlineMode());
     }
