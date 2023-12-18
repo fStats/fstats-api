@@ -23,8 +23,8 @@ public final class ConfigManager {
 
     public static void init() {
         LogManager.getLogFreeLogger().warn(configFile.getAbsolutePath());
-        if (configDir.exists()) {
-            if (!configDir.mkdirs()) LogManager.getLogFreeLogger().warn("Can't create config dirs");
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            LogManager.getLogFreeLogger().warn("Can't create config dirs");
         }
 
         if (!configFile.exists()) {
@@ -41,7 +41,7 @@ public final class ConfigManager {
 
         if (!Objects.equals(read().getVersion(), defaultConfig.getVersion())) {
             try {
-                LogManager.warn("Looks like config is deprecated... Updating...");
+                LogManager.getLogFreeLogger().warn("Looks like config is deprecated... Updating...");
 
                 var enabled = read().isEnabled() == null || read().isEnabled();
                 var hideLocation = read().isLocationHide() != null && read().isLocationHide();
@@ -58,9 +58,9 @@ public final class ConfigManager {
         try {
             return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
         } catch (Exception e) {
-            LogManager.error("Can't read config or it don't exist");
+            LogManager.getLogFreeLogger().error("Can't read config or it don't exist");
             try {
-                LogManager.info("Backup config...");
+                LogManager.getLogFreeLogger().info("Backup config...");
                 Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
                 Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
                 return gson.fromJson(Files.readString(configFile.toPath()), Config.class);

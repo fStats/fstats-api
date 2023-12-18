@@ -51,17 +51,17 @@ public class LogManager {
     }
 
     public static String getLatestLog() {
-        if (logFile.canRead()) {
-            try {
-                var lines = Files.readAllLines(logFile.toPath());
-                if (lines.isEmpty()) return null;
-                return lines.get(lines.size() - 1);
-            } catch (IOException e) {
-                logger.warn("Can't get latest log");
-                logger.warn(e);
-            }
+        if (!logFile.canRead()) return null;
+
+        try {
+            var lines = Files.readAllLines(logFile.toPath());
+            if (lines.isEmpty()) return null;
+            return lines.get(lines.size() - 1);
+        } catch (IOException e) {
+            logger.warn("Can't get latest log");
+            logger.warn(e);
+            return null;
         }
-        return null;
     }
 
     private static void writeLog(Level level, String message) {
