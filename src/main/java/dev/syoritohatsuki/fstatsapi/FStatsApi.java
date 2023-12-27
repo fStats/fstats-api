@@ -28,6 +28,10 @@ public class FStatsApi {
     private static final int requestSendDelay = 1000 * 60 * 30;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+    public static ScheduledExecutorService getScheduler() {
+        return scheduler;
+    }
+
     public static void sendMetricRequest(String version, boolean onlineMode) {
 
         long now = System.currentTimeMillis();

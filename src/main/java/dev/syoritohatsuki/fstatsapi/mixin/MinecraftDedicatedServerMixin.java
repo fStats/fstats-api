@@ -8,12 +8,13 @@ import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftDedicatedServer.class)
 public abstract class MinecraftDedicatedServerMixin {
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/MinecraftDedicatedServer;loadWorld()V", shift = At.Shift.AFTER), method = "setupServer")
+    @Inject(method = "setupServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/MinecraftDedicatedServer;loadWorld()V", shift = At.Shift.AFTER))
     private void afterSetupServer(CallbackInfoReturnable<Boolean> cir) {
 
         LogManager.init();
@@ -27,5 +28,11 @@ public abstract class MinecraftDedicatedServerMixin {
         LogManager.logger.info("--------------------");
 
         FStatsApi.sendMetricRequest(((MinecraftServer) (Object) this).getVersion(), ((MinecraftServer) (Object) this).isOnlineMode());
+    }
+
+    @Inject(method = "shutdown", at = @At("HEAD"))
+    private void onShutdown(CallbackInfo ci) {
+        LogManager.logger.info("Stopping fStats");
+        FStatsApi.getScheduler().shutdown();
     }
 }
