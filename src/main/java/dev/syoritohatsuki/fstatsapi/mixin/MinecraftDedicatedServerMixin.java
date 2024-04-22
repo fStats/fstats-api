@@ -3,7 +3,6 @@ package dev.syoritohatsuki.fstatsapi.mixin;
 import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.logs.LogManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +26,7 @@ public abstract class MinecraftDedicatedServerMixin {
         LogManager.logger.info("\u001B[33mThat mod work like bStats, no need to panic. You can disable it config if you want\u001B[0m");
         LogManager.logger.info("--------------------");
 
-        FStatsApi.sendMetricRequest(((MinecraftServer) (Object) this).getVersion(), ((MinecraftServer) (Object) this).isOnlineMode());
+        FStatsApi.sendMetricRequest();
     }
 
     @Inject(method = "shutdown", at = @At("HEAD"))
