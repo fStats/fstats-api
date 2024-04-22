@@ -13,6 +13,9 @@
   "license": "MIT Licence",
   "environment": "server",
   "custom": {
+    "duckyupdater": {
+      "modrinthId": "DkOr2M32"
+    },
     "fstats": 1
   },
   "mixins": [
