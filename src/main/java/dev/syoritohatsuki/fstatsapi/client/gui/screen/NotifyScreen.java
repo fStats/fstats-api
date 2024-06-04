@@ -5,6 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.TelemetryEventWidget;
+import net.minecraft.client.gui.screen.option.TelemetryInfoScreen;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
@@ -35,7 +36,7 @@ public class NotifyScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void init() {
         SimplePositioningWidget simplePositioningWidget = new SimplePositioningWidget();
         simplePositioningWidget.getMainPositioner().margin(8);
         simplePositioningWidget.setMinHeight(this.height);
@@ -45,8 +46,8 @@ public class NotifyScreen extends Screen {
         adder.add(new TextWidget(this.getTitle(), this.textRenderer));
         adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - 16).setCentered(true));
         GridWidget gridWidget2 = this.createButtonRow(
-                ButtonWidget.builder(GIVE_FEEDBACK_TEXT, this::openFeedbackPage).build(), ButtonWidget.builder(SHOW_DATA_TEXT, button -> {
-                }).build()
+                addDrawableChild(ButtonWidget.builder(GIVE_FEEDBACK_TEXT, this::openFeedbackPage).build()),
+                addDrawableChild(ButtonWidget.builder(SHOW_DATA_TEXT, button -> {}).build())
         );
         adder.add(gridWidget2);
         GridWidget gridWidget3 = this.createButtonRow(ButtonWidget.builder(ScreenTexts.DONE, button -> {
@@ -64,7 +65,17 @@ public class NotifyScreen extends Screen {
         simplePositioningWidget.refreshPositions();
         SimplePositioningWidget.setPos(simplePositioningWidget, 0, 0, this.width, this.height, 0.5F, 0.0F);
         simplePositioningWidget.forEachChild(child -> {
+            ClickableWidget var10000 = this.addDrawableChild(child);
         });
+
+        super.init();
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
+
     }
 
     private void openFeedbackPage(ButtonWidget button) {
