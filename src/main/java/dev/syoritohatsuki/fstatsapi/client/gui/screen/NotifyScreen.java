@@ -1,91 +1,60 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.TelemetryEventWidget;
-import net.minecraft.client.gui.screen.option.TelemetryInfoScreen;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class NotifyScreen extends Screen {
-    private final Set<String> mods = FabricLoader.getInstance().getAllMods().stream().filter(modContainer -> modContainer.getMetadata().containsCustomValue("fstats")).map(modContainer -> modContainer.getMetadata().getName()).collect(Collectors.toSet());
     private final Screen parent;
 
-    private static final Text DESCRIPTION_TEXT = Text.translatable("telemetry_info.screen.description").formatted(Formatting.GRAY);
-    private static final Text GIVE_FEEDBACK_TEXT = Text.translatable("telemetry_info.button.give_feedback");
-    private static final Text SHOW_DATA_TEXT = Text.translatable("telemetry_info.button.show_data");
-
-    private TelemetryEventWidget telemetryEventWidget;
+    private static final Text DESCRIPTION_TEXT = Text.literal("fStats is a 3rd-party metric collection library. The Main idea is help developers to recognize their actual community based on charts").formatted(Formatting.GRAY);
     private double scroll;
 
     public NotifyScreen(Screen parent) {
         super(Text.literal("fStats"));
         this.parent = parent;
-
-        mods.add("FabricAPI");
-        mods.add("Random Test");
-        mods.add("Nansensu");
     }
 
     @Override
     protected void init() {
         SimplePositioningWidget simplePositioningWidget = new SimplePositioningWidget();
         simplePositioningWidget.getMainPositioner().margin(8);
-        simplePositioningWidget.setMinHeight(this.height);
+        //noinspection SuspiciousNameCombination
+        simplePositioningWidget.setMinHeight(height);
         GridWidget gridWidget = simplePositioningWidget.add(new GridWidget(), simplePositioningWidget.copyPositioner().relative(0.5F, 0.0F));
         gridWidget.getMainPositioner().alignHorizontalCenter().marginBottom(8);
         GridWidget.Adder adder = gridWidget.createAdder(1);
-        adder.add(new TextWidget(this.getTitle(), this.textRenderer));
-        adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - 16).setCentered(true));
-        GridWidget gridWidget2 = this.createButtonRow(
-                addDrawableChild(ButtonWidget.builder(GIVE_FEEDBACK_TEXT, this::openFeedbackPage).build()),
-                addDrawableChild(ButtonWidget.builder(SHOW_DATA_TEXT, button -> {}).build())
+        adder.add(new TextWidget(getTitle(), textRenderer));
+        adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, textRenderer).setMaxWidth(width - 16).setCentered(true));
+        GridWidget gridWidget2 = createButtonRow(
+                ButtonWidget.builder(Text.literal("fdsfsdf"), button -> {
+                }).build(), ButtonWidget.builder(Text.literal("rqrqrqr"), button -> {
+                }).build()
         );
         adder.add(gridWidget2);
-        GridWidget gridWidget3 = this.createButtonRow(ButtonWidget.builder(ScreenTexts.DONE, button -> {
-        }).build(), ButtonWidget.builder(ScreenTexts.DONE, button -> {
-        }).build());
+        GridWidget gridWidget3 = createButtonRow(ButtonWidget.builder(ScreenTexts.CANCEL, button -> {
+        }).build(), ButtonWidget.builder(ScreenTexts.DONE, button -> close()).build());
         simplePositioningWidget.add(gridWidget3, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
         simplePositioningWidget.refreshPositions();
-        this.telemetryEventWidget = new TelemetryEventWidget(
-                0, 0, this.width - 40, gridWidget3.getY() - (gridWidget2.getY() + gridWidget2.getHeight()) - 16, this.textRenderer
+        ModsWidget modsWidget = new ModsWidget(
+                0, 0, width - 40, gridWidget3.getY() - (gridWidget2.getY() + gridWidget2.getHeight()) - 16, textRenderer
         );
-        this.telemetryEventWidget.setScrollY(this.scroll);
-        this.telemetryEventWidget.setScrollConsumer(scroll -> this.scroll = scroll);
-        this.setInitialFocus(this.telemetryEventWidget);
-        adder.add(this.telemetryEventWidget);
+        modsWidget.setScrollY(scroll);
+        modsWidget.setScrollConsumer(scroll -> this.scroll = scroll);
+        setInitialFocus(modsWidget);
+        adder.add(modsWidget);
         simplePositioningWidget.refreshPositions();
-        SimplePositioningWidget.setPos(simplePositioningWidget, 0, 0, this.width, this.height, 0.5F, 0.0F);
-        simplePositioningWidget.forEachChild(child -> {
-            ClickableWidget var10000 = this.addDrawableChild(child);
-        });
-
-        super.init();
+        SimplePositioningWidget.setPos(simplePositioningWidget, 0, 0, width, height, 0.5F, 0.0F);
+        simplePositioningWidget.forEachChild(this::addDrawableChild);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
-
-    }
-
-    private void openFeedbackPage(ButtonWidget button) {
-        this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
-            if (confirmed) {
-                Util.getOperatingSystem().open("https://aka.ms/javafeedback?ref=game");
-            }
-
-            this.client.setScreen(this);
-        }, "https://aka.ms/javafeedback?ref=game", true));
     }
 
     private GridWidget createButtonRow(ClickableWidget left, ClickableWidget right) {
