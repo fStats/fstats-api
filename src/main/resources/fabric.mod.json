@@ -11,7 +11,7 @@
     "homepage": "https://fstats.dev/"
   },
   "license": "MIT Licence",
-  "environment": "server",
+  "environment": "*",
   "custom": {
     "duckyupdater": {
       "modrinthId": "DkOr2M32"
