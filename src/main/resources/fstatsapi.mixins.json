@@ -7,5 +7,9 @@
   },
   "server": [
     "MinecraftDedicatedServerMixin"
+  ],
+  "client": [
+    "client.MinecraftClientMixin",
+    "client.TitleScreenMixin"
   ]
 }
