@@ -26,6 +26,10 @@ dependencies {
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/fstats.accesswidener")
+}
+
 tasks {
     val javaVersion = JavaVersion.VERSION_17
 
