@@ -56,7 +56,7 @@ public class FStatsApi {
                     throw new RuntimeException("Error while sending request", new Throwable(response.body()));
                 }
 
-                var message = "Metric data sent to https://fstats.dev";
+                var message = "Metric data sent to https://fstats.dev/";
 
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
                     LogManager.logger.info(message);
