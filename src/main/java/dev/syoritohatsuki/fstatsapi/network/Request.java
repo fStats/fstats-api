@@ -63,6 +63,6 @@ public class Request {
     }
 
     public static String getJson() {
-        return new GsonBuilder().setPrettyPrinting().create().toJson(new Metrics(getProjects(), new Metrics.Metric(getMinecraftVersion(), getOnlineMode(), getOperatingSystem(), getLocation(), getFabricApiVersion())));
+        return new GsonBuilder().create().toJson(new Metrics(getProjects(), new Metrics.Metric(getMinecraftVersion(), getOnlineMode(), getOperatingSystem(), getLocation(), getFabricApiVersion())));
     }
 }
