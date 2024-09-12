@@ -39,19 +39,29 @@ public class FStatsApi {
             nextStepTime = nextStepTime + TimeUnit.MINUTES.toMillis(ThreadLocalRandom.current().nextInt(30, 41)) - diff;
         }
 
-        LogManager.logger.warn(Request.getJson());
-
         scheduler.scheduleAtFixedRate(() -> {
-            try {
-                var url = URI.create("https://api.fstats.dev/v2/metrics");
+            try(var client = HttpClient.newHttpClient()) {
+                var url = URI.create("https://api.fstats.dev/v3/metrics");
                 var postBody = HttpRequest.BodyPublishers.ofString(Request.getJson());
 
-                HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
+                if (ConfigManager.read().getMessages().isInfosEnabled()) {
+                    LogManager.logger.info("-----[ \u001B[36m\u001B[1mRequest Json ]-----");
+                    LogManager.logger.info(Request.getJson());
+                    LogManager.logger.info("--------------------------");
+                }
+
+                var response =  client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
+
+                if (!response.body().contains("201")) {
+                    throw new RuntimeException("Error while sending request", new Throwable(response.body()));
+                }
 
                 var message = "Metric data sent to https://fstats.dev";
+
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
                     LogManager.logger.info(message);
                 }
+
                 LogManager.writeLog(message);
             } catch (Exception e) {
                 if (ConfigManager.read().getMessages().isErrorsEnabled()) {
