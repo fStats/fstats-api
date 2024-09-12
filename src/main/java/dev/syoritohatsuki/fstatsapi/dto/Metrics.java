@@ -4,6 +4,6 @@ import java.util.Map;
 
 public record Metrics(Map<Integer, String> projectIds, Metric metric) {
     public record Metric(String minecraftVersion, boolean isOnlineMode, char os, String location,
-                         String fabricApiVersion) {
+                         String fabricApiVersion, boolean isServerSide) {
     }
 }

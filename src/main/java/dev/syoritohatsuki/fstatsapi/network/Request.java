@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.dto.Metrics;
 import dev.syoritohatsuki.fstatsapi.logs.LogManager;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.dedicated.ServerPropertiesHandler;
@@ -63,7 +64,11 @@ public class Request {
         return fabricApi.map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
     }
 
+    static boolean isServerSide() {
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER;
+    }
+
     public static String getJson() {
-        return new GsonBuilder().create().toJson(new Metrics(getProjects(), new Metrics.Metric(getMinecraftVersion(), getOnlineMode(), getOperatingSystem(), getLocation(), getFabricApiVersion())));
+        return new GsonBuilder().create().toJson(new Metrics(getProjects(), new Metrics.Metric(getMinecraftVersion(), getOnlineMode(), getOperatingSystem(), getLocation(), getFabricApiVersion(), isServerSide())));
     }
 }
