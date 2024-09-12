@@ -11,6 +11,8 @@ import net.minecraft.server.dedicated.ServerPropertiesHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -44,16 +46,15 @@ public class Request {
         if (ConfigManager.read().isLocationHide()) return "unknown";
 
         try {
-            URL ip = new URL("https://checkip.amazonaws.com/");
-            URL location = new URL("https://ip2c.org/" + new BufferedReader(new InputStreamReader(ip.openStream())).readLine());
+            URL location = new URI("https://ip2c.org/self").toURL();
             String response = new BufferedReader(new InputStreamReader(location.openStream())).readLine();
-            return response.split(";")[3];
-        } catch (IOException e) {
+            return response.split(";")[2];
+        } catch (IOException | URISyntaxException e) {
             if (ConfigManager.read().getMessages().isWarningsEnabled()) {
                 LogManager.logger.warn("Can't convert IP to location");
                 LogManager.logger.warn(e);
             }
-            return "unknown";
+            return "XXX";
         }
     }
 
