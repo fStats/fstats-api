@@ -10,6 +10,7 @@
   "contact": {
     "homepage": "https://fstats.dev/"
   },
+  "icon": "assets/fstats-api/textures/gui/fstats.png",
   "license": "MIT Licence",
   "environment": "server",
   "custom": {
