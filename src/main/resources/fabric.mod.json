@@ -12,7 +12,7 @@
   },
   "icon": "assets/fstats-api/textures/gui/fstats.png",
   "license": "MIT Licence",
-  "environment": "server",
+  "environment": "*",
   "custom": {
     "duckyupdater": {
       "modrinthId": "DkOr2M32"
