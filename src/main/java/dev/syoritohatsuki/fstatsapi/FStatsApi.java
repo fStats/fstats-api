@@ -16,6 +16,9 @@ public class FStatsApi {
     public static final String MOD_ID = "fstats-api";
     private static final String USER_AGENT = "fstats/fstats-api/" + getFStatsVersion() + " (fstats.dev)";
 
+    public static final String API_URL = "https://api.fstats.dev/";
+    public static final String OFFICIAL_PAGE_URL = "https://fstats.dev/";
+
     private static final int requestSendDelay = 1000 * 60 * 30;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static ScheduledFuture<?> requestSendingTaskFuture = null;
@@ -43,7 +46,7 @@ public class FStatsApi {
 
         requestSendingTaskFuture = scheduler.scheduleAtFixedRate(() -> {
             try(var client = HttpClient.newHttpClient()) {
-                var url = URI.create("https://api.fstats.dev/v3/metrics");
+                var url = URI.create(API_URL + "v3/metrics");
                 var postBody = HttpRequest.BodyPublishers.ofString(Request.getJson());
 
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
@@ -58,7 +61,7 @@ public class FStatsApi {
                     throw new RuntimeException("Error while sending request: " + response.body());
                 }
 
-                var message = "Metric data sent to https://fstats.dev/";
+                var message = "Metric data sent to " + OFFICIAL_PAGE_URL;
 
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
                     LogManager.logger.info(message);

@@ -15,6 +15,8 @@ import net.minecraft.util.Util;
 
 import java.util.Objects;
 
+import static dev.syoritohatsuki.fstatsapi.FStatsApi.OFFICIAL_PAGE_URL;
+
 @Environment(EnvType.CLIENT)
 public class FStatsScreen extends Screen {
     private static final int MARGIN = 8;
@@ -24,7 +26,6 @@ public class FStatsScreen extends Screen {
     private static final Text OFFICIAL_PAGE_TEXT = Text.literal("Official Page");
 
     private static final String DEVELOPER_MAIL = "kit.lehto.d@gmail.com";
-    private static final String OFFICIAL_PAGE_URL = "https://fstats.dev/";
 
     private Mode mode = Objects.requireNonNullElse(ConfigManager.read().getMode(), Mode.ALL);
     private final Screen parent;
