@@ -79,6 +79,6 @@ public class FStatsApi {
     }
 
     private static String getFStatsVersion() {
-        return FabricLoader.getInstance().getModContainer("fstats-api").map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
+        return FabricLoader.getInstance().getModContainer(MOD_ID).map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
     }
 }
