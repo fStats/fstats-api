@@ -20,7 +20,7 @@ public class FStatsWidget extends ScrollableWidget {
     private static final int MARGIN_X = 32;
     private static final Text PROPERTY_TITLE_TEXT = Text.translatable("telemetry_info.property_title").formatted(Formatting.UNDERLINE);
     private final TextRenderer textRenderer;
-    private FStatsWidget.Contents contents;
+    private final FStatsWidget.Contents contents;
     @Nullable
     private DoubleConsumer scrollConsumer;
 
@@ -64,10 +64,10 @@ public class FStatsWidget extends ScrollableWidget {
 
     @Override
     protected void renderContents(DrawContext context, int mouseX, int mouseY, float delta) {
-        int i = this.getY() + this.getPadding();
-        int j = this.getX() + this.getPadding();
+        int xWithPadding = this.getX() + this.getPadding();
+        int yWithPadding = this.getY() + this.getPadding();
         context.getMatrices().push();
-        context.getMatrices().translate((double) j, (double) i, 0.0);
+        context.getMatrices().translate(xWithPadding, yWithPadding, 0.0);
         this.contents.grid().forEachChild(widget -> widget.render(context, mouseX, mouseY, delta));
         context.getMatrices().pop();
     }
