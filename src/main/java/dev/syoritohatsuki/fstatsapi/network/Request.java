@@ -22,6 +22,8 @@ import static java.util.stream.Collectors.toMap;
 
 public class Request {
 
+    private static final String HIDDEN_LOCATION_CODE = "XXX";
+
     private static Map<Integer, String> getProjects() {
         return FabricLoader.getInstance().getAllMods().stream().filter(modContainer -> modContainer.getMetadata().getCustomValue("fstats") != null).collect(toMap(modContainer -> modContainer.getMetadata().getCustomValue("fstats").getAsNumber().intValue(), modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()));
     }
@@ -30,8 +32,9 @@ public class Request {
         return SharedConstants.getGameVersion().getName();
     }
 
-    private static boolean getOnlineMode() {
-        return ServerPropertiesHandler.load(Paths.get("server.properties")).onlineMode;
+    private static Boolean getOnlineMode() {
+        if (isServerSide()) return ServerPropertiesHandler.load(Paths.get("server.properties")).onlineMode;
+        else return null;
     }
 
     private static char getOperatingSystem() {
@@ -44,7 +47,7 @@ public class Request {
 
     private static String getLocation() {
 
-        if (ConfigManager.read().isLocationHide()) return "unknown";
+        if (ConfigManager.read().isLocationHide()) return HIDDEN_LOCATION_CODE;
 
         try {
             URL location = new URI("https://ip2c.org/self").toURL();
@@ -55,7 +58,7 @@ public class Request {
                 LogManager.logger.warn("Can't convert IP to location");
                 LogManager.logger.warn(e);
             }
-            return "XXX";
+            return HIDDEN_LOCATION_CODE;
         }
     }
 
