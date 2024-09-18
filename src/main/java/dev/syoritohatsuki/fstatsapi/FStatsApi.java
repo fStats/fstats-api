@@ -45,7 +45,8 @@ public class FStatsApi {
         }
 
         requestSendingTaskFuture = scheduler.scheduleAtFixedRate(() -> {
-            try(var client = HttpClient.newHttpClient()) {
+            try {
+                var client = HttpClient.newHttpClient();
                 var url = URI.create(API_URL + "v3/metrics");
                 var postBody = HttpRequest.BodyPublishers.ofString(Request.getJson());
 
@@ -55,7 +56,7 @@ public class FStatsApi {
                     LogManager.logger.info("--------------------------");
                 }
 
-                var response =  client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
+                var response = client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
 
                 if (!response.body().contains("201")) {
                     throw new RuntimeException("Error while sending request: " + response.body());
