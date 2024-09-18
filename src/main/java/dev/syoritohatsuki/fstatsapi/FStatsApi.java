@@ -55,7 +55,7 @@ public class FStatsApi {
                 var response =  client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
 
                 if (!response.body().contains("201")) {
-                    throw new RuntimeException("Error while sending request", new Throwable(response.body()));
+                    throw new RuntimeException("Error while sending request: " + response.body());
                 }
 
                 var message = "Metric data sent to https://fstats.dev/";
