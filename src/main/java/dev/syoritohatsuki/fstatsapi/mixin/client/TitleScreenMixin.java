@@ -2,6 +2,7 @@ package dev.syoritohatsuki.fstatsapi.mixin.client;
 
 import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.client.gui.screen.FStatsScreen;
+import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -44,12 +45,12 @@ public abstract class TitleScreenMixin extends Screen {
                             20,
                             20,
                             button -> client.setScreen(new FStatsScreen(this)),
-                            Text.literal("fStats")
+                            TextsWithFallbacks.MOD_NAME_TEXT
                     )
             );
         } else {
             addDrawableChild(
-                    ButtonWidget.builder(Text.literal("fStats"), button -> this.client.setScreen(new FStatsScreen(this)))
+                    ButtonWidget.builder(TextsWithFallbacks.MOD_NAME_TEXT, button -> this.client.setScreen(new FStatsScreen(this)))
                             .dimensions(this.width / 2 + 104, this.height / 4 + 48, 42, 20)
                             .build()
             );

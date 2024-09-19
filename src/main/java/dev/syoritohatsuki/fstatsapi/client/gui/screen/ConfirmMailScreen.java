@@ -1,5 +1,6 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
+import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
@@ -11,7 +12,6 @@ import net.minecraft.util.Util;
 
 public class ConfirmMailScreen extends ConfirmScreen {
     private static final Text COPY = Text.translatable("chat.copy");
-    private static final Text WARNING = Text.literal("Never send mail to people that you don't trust!");
     private final String mail;
     private final boolean drawWarning;
 
@@ -21,7 +21,7 @@ public class ConfirmMailScreen extends ConfirmScreen {
 
     public ConfirmMailScreen(BooleanConsumer callback, Text title, Text message, String mail, Text noText, boolean mailTrusted) {
         super(callback, title, message);
-        this.yesText = mailTrusted ? Text.literal("Open in Mail App") : ScreenTexts.YES;
+        this.yesText = mailTrusted ? TextsWithFallbacks.MAIL_OPEN_TEXT : ScreenTexts.YES;
         this.noText = noText;
         this.drawWarning = !mailTrusted;
         this.mail = mail;
@@ -32,7 +32,7 @@ public class ConfirmMailScreen extends ConfirmScreen {
     }
 
     protected static MutableText getConfirmText(boolean mailTrusted) {
-        return Text.translatable(mailTrusted ? "Do you want to open this mail or copy it to your clipboard?" : "Are you sure you want to open the following mail?");
+        return mailTrusted ? TextsWithFallbacks.MAIL_CONFIRM_TRUSTED_TEXT : TextsWithFallbacks.MAIL_CONFIRM_TEXT;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ConfirmMailScreen extends ConfirmScreen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        if (this.drawWarning) context.drawCenteredTextWithShadow(this.textRenderer, WARNING, this.width / 2, 110, 16764108);
+        if (this.drawWarning) context.drawCenteredTextWithShadow(this.textRenderer, TextsWithFallbacks.MAIL_WARNING_TEXT, this.width / 2, 110, 16764108);
     }
 
     public static void open(String mail) {

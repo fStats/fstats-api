@@ -1,5 +1,7 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
+import dev.syoritohatsuki.fstatsapi.FStatsApi;
+import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import dev.syoritohatsuki.fstatsapi.config.Config.Mode;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.fabricmc.api.EnvType;
@@ -15,15 +17,11 @@ import net.minecraft.util.Util;
 
 import java.util.Objects;
 
-import static dev.syoritohatsuki.fstatsapi.FStatsApi.OFFICIAL_PAGE_URL;
-
 @Environment(EnvType.CLIENT)
 public class FStatsScreen extends Screen {
     private static final int MARGIN = 8;
-    private static final Text TITLE_TEXT = Text.literal("fStats Data Collection");
-    private static final Text DESCRIPTION_TEXT = Text.literal("Collecting this data helps developer improve their mods by guiding them in directions that are relevant to players").formatted(Formatting.GRAY);
-    private static final Text CONTACT_DEVELOPER_TEXT = Text.literal("Contact Developer");
-    private static final Text OFFICIAL_PAGE_TEXT = Text.literal("Official Page");
+
+    private static final Text DESCRIPTION_TEXT = TextsWithFallbacks.DESCRIPTION_TEXT.formatted(Formatting.GRAY);
 
     private static final String DEVELOPER_MAIL = "kit.lehto.d@gmail.com";
 
@@ -32,7 +30,7 @@ public class FStatsScreen extends Screen {
     private double scroll;
 
     public FStatsScreen(Screen parent) {
-        super(TITLE_TEXT);
+        super(TextsWithFallbacks.TITLE_TEXT);
         this.parent = parent;
     }
 
@@ -53,19 +51,19 @@ public class FStatsScreen extends Screen {
         GridWidget.Adder adder = gridWidget.createAdder(1);
         adder.add(new TextWidget(this.getTitle(), this.textRenderer));
         adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - MARGIN * 2).setCentered(true));
-        GridWidget gridWidget2 = this.createButtonRow(ButtonWidget.builder(CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
+        GridWidget gridWidget2 = this.createButtonRow(ButtonWidget.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
             if (confirmed) ConfirmMailScreen.open(DEVELOPER_MAIL);
             this.client.setScreen(this);
-        }, DEVELOPER_MAIL, true))).build(), ButtonWidget.builder(OFFICIAL_PAGE_TEXT, button -> this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
-            if (confirmed) Util.getOperatingSystem().open(OFFICIAL_PAGE_URL);
+        }, DEVELOPER_MAIL, true))).build(), ButtonWidget.builder(TextsWithFallbacks.OFFICIAL_PAGE_TEXT, button -> this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
+            if (confirmed) Util.getOperatingSystem().open(FStatsApi.OFFICIAL_PAGE_URL);
             this.client.setScreen(this);
-        }, OFFICIAL_PAGE_URL, true))).build());
+        }, FStatsApi.OFFICIAL_PAGE_URL, true))).build());
         adder.add(gridWidget2);
         GridWidget gridWidget3 = this.createButtonRow(
                 CyclingButtonWidget.builder((Mode value) -> Text.literal(value.toString()))
                         .values(Mode.values())
                         .initially(mode)
-                        .build(this.width / 2 - 155, 100, 150, 20, Text.literal("Collect"), (button, mode) -> {
+                        .build(this.width / 2 - 155, 100, 150, 20, TextsWithFallbacks.COLLECT_MODE_TEXT, (button, mode) -> {
                             this.mode = mode;
                             switch (mode) {
                                 case ALL -> ConfigManager.enable();

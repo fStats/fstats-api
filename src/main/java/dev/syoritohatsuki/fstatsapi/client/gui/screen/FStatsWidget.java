@@ -1,5 +1,6 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
+import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -8,12 +9,15 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.*;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.DoubleConsumer;
+
+import static dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks.*;
 
 @Environment(EnvType.CLIENT)
 public class FStatsWidget extends ScrollableWidget {
@@ -78,20 +82,45 @@ public class FStatsWidget extends ScrollableWidget {
     }
 
     private void appendCollectableInfo(FStatsWidget.ContentsBuilder builder) {
-        builder.appendText(this.textRenderer, Text.literal("After entering world"));
-        builder.appendText(this.textRenderer, Text.literal("Next data will be collected anonymously after you spawn in world every").formatted(Formatting.GRAY));
+        builder.appendText(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_TEXT);
+        builder.appendText(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_DESCRIPTION_TEXT.formatted(Formatting.GRAY));
         builder.appendSpace(9 / 2);
         builder.appendTitle(this.textRenderer, PROPERTY_TITLE_TEXT, 2);
-        builder.appendTitle(this.textRenderer, Text.literal(" - Country name").append(Text.literal(" (If allowed)").formatted(Formatting.GRAY)));
-        builder.appendTitle(this.textRenderer, Text.literal(" - Fabric API version").append(Text.literal(" (If installed)").formatted(Formatting.GRAY)));
-        builder.appendTitle(this.textRenderer, Text.literal(" - Minecraft version"));
-        builder.appendTitle(this.textRenderer, Text.literal(" - Mod version"));
-        builder.appendTitle(this.textRenderer, Text.literal(" - Operation System ").append(Text.literal(" (First letter)").formatted(Formatting.GRAY)));
-        builder.appendTitle(this.textRenderer, Text.literal(" - Server online mode"));
+        builder.appendTitle(this.textRenderer, Text.literal(" - ")
+                .append(TextsWithFallbacks.COUNTRY_CODE_TEXT)
+                .append(ScreenTexts.SPACE)
+                .append(Text.literal("(")
+                        .append(IF_ALLOWED_TEXT)
+                        .append(Text.literal(")"))
+                        .formatted(Formatting.GRAY)
+                )
+        );
+        builder.appendTitle(this.textRenderer, Text.literal(" - ")
+                .append(TextsWithFallbacks.FABRIC_API_VERSION_TEXT)
+                .append(ScreenTexts.SPACE)
+                .append(Text.literal("(")
+                        .append(IF_INSTALLED_TEXT)
+                        .append(Text.literal(")"))
+                        .formatted(Formatting.GRAY)
+                )
+        );
+        builder.appendTitle(this.textRenderer, Text.literal(" - ")
+                .append(TextsWithFallbacks.MOD_VERSION_TEXT));
+        builder.appendTitle(this.textRenderer, Text.literal(" - ")
+                .append(MINECRAFT_VERSION_TEXT));
+        builder.appendTitle(this.textRenderer, Text.literal(" - ")
+                .append(OPERATION_SYSTEM_TEXT)
+                .append(ScreenTexts.SPACE)
+                .append(Text.literal("(")
+                        .append(FIRST_LETTER_TEXT)
+                        .append(Text.literal(")"))
+                        .formatted(Formatting.GRAY)
+                )
+        );
     }
 
     private void appendModsList(FStatsWidget.ContentsBuilder builder) {
-        builder.appendText(this.textRenderer, Text.literal("List of mods that use fStats"));
+        builder.appendText(this.textRenderer, MODS_USE_TEXT);
         builder.appendSpace(9 / 2);
         FabricLoader.getInstance()
                 .getAllMods()
