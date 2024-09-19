@@ -2,23 +2,29 @@ package dev.syoritohatsuki.fstatsapi.config;
 
 public final class Config {
     private final Integer version;
-    private final Boolean enabled;
-    private final Boolean hideLocation;
+    private Mode mode;
     private final Messages messages;
 
-    public Config(Integer version, Boolean enabled, Boolean hideLocation, Messages messages) {
+    public Config(Integer version, Mode mode, Messages messages) {
         this.version = version;
-        this.enabled = enabled;
-        this.hideLocation = hideLocation;
+        this.mode = mode;
         this.messages = messages;
     }
 
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
     public Boolean isEnabled() {
-        return enabled;
+        return mode == Mode.ALL || mode == Mode.WITHOUT_LOCATION;
     }
 
     public Boolean isLocationHide() {
-        return hideLocation;
+        return mode == Mode.WITHOUT_LOCATION;
+    }
+
+    public Mode getMode() {
+        return mode;
     }
 
     public Messages getMessages() {
@@ -50,6 +56,21 @@ public final class Config {
 
         public Boolean isErrorsEnabled() {
             return errors;
+        }
+    }
+
+    public enum Mode {
+        ALL,
+        WITHOUT_LOCATION,
+        NOTHING;
+
+        @Override
+        public String toString() {
+            return switch (this) {
+                case ALL -> "All";
+                case WITHOUT_LOCATION -> "Without location";
+                case NOTHING -> "Nothing";
+            };
         }
     }
 }

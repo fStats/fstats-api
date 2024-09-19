@@ -5,6 +5,11 @@
   "injectors": {
     "defaultRequire": 1
   },
+  "client": [
+    "client.ClientWorldMixin",
+    "client.MinecraftClientMixin",
+    "client.TitleScreenMixin"
+  ],
   "server": [
     "MinecraftDedicatedServerMixin"
   ]

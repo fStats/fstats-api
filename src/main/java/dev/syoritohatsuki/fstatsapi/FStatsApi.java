@@ -9,21 +9,26 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class FStatsApi {
 
     public static final String MOD_ID = "fstats-api";
     private static final String USER_AGENT = "fstats/fstats-api/" + getFStatsVersion() + " (fstats.dev)";
 
+    public static final String API_URL = "https://api.fstats.dev/";
+    public static final String OFFICIAL_PAGE_URL = "https://fstats.dev/";
+
     private static final int requestSendDelay = 1000 * 60 * 30;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static ScheduledFuture<?> requestSendingTaskFuture = null;
 
     public static ScheduledExecutorService getScheduler() {
         return scheduler;
+    }
+
+    public static ScheduledFuture<?> getRequestSendingTaskFuture() {
+        return requestSendingTaskFuture;
     }
 
     public static void sendMetricRequest() {
@@ -39,19 +44,30 @@ public class FStatsApi {
             nextStepTime = nextStepTime + TimeUnit.MINUTES.toMillis(ThreadLocalRandom.current().nextInt(30, 41)) - diff;
         }
 
-        LogManager.logger.warn(Request.getJson());
-
-        scheduler.scheduleAtFixedRate(() -> {
+        requestSendingTaskFuture = scheduler.scheduleAtFixedRate(() -> {
             try {
-                var url = URI.create("https://api.fstats.dev/v2/metrics");
+                var client = HttpClient.newHttpClient();
+                var url = URI.create(API_URL + "v3/metrics");
                 var postBody = HttpRequest.BodyPublishers.ofString(Request.getJson());
 
-                HttpClient.newHttpClient().send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
+                if (ConfigManager.read().getMessages().isInfosEnabled()) {
+                    LogManager.logger.info("-----[ \u001B[36m\u001B[1mRequest Json ]-----");
+                    LogManager.logger.info(Request.getJson());
+                    LogManager.logger.info("--------------------------");
+                }
 
-                var message = "Metric data sent to https://fstats.dev";
+                var response = client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
+
+                if (!response.body().contains("201")) {
+                    throw new RuntimeException("Error while sending request: " + response.body());
+                }
+
+                var message = "Metric data sent to " + OFFICIAL_PAGE_URL;
+
                 if (ConfigManager.read().getMessages().isInfosEnabled()) {
                     LogManager.logger.info(message);
                 }
+
                 LogManager.writeLog(message);
             } catch (Exception e) {
                 if (ConfigManager.read().getMessages().isErrorsEnabled()) {
@@ -63,6 +79,6 @@ public class FStatsApi {
     }
 
     private static String getFStatsVersion() {
-        return FabricLoader.getInstance().getModContainer("fstats-api").map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
+        return FabricLoader.getInstance().getModContainer(MOD_ID).map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString()).orElse(null);
     }
 }

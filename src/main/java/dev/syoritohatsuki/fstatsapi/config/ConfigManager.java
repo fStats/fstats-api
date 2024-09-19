@@ -19,7 +19,11 @@ public final class ConfigManager {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    private static final Config defaultConfig = new Config(1, true, false, new Config.Messages(true, true, true));
+    private static final Config defaultConfig = new Config(2, Config.Mode.ALL, new Config.Messages(true, true, true));
+
+    public static boolean configExists() {
+        return configFile.exists();
+    }
 
     public static void init() {
         if (!configDir.exists() && !configDir.mkdirs()) {
@@ -42,11 +46,10 @@ public final class ConfigManager {
             try {
                 LogManager.logger.warn("Looks like config is deprecated... Updating...");
 
-                var enabled = read().isEnabled() == null || read().isEnabled();
-                var hideLocation = read().isLocationHide() != null && read().isLocationHide();
-                var messages = read().getMessages() == null ? new Config.Messages(true, true, true) : read().getMessages();
+                var mode = read().getMode() == null ? defaultConfig.getMode() : read().getMode();
+                var messages = read().getMessages() == null ? defaultConfig.getMessages() : read().getMessages();
 
-                Files.writeString(configFile.toPath(), gson.toJson(new Config(defaultConfig.getVersion(), enabled, hideLocation, messages)));
+                Files.writeString(configFile.toPath(), gson.toJson(new Config(defaultConfig.getVersion(), mode, messages)));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -59,13 +62,45 @@ public final class ConfigManager {
         } catch (Exception e) {
             LogManager.logger.error("Can't read config or it don't exist");
             try {
-                LogManager.logger.info("Backup config...");
-                Files.copy(configFile.toPath(), new File(configDir, "backup_config.json").toPath());
-                Files.writeString(configFile.toPath(), gson.toJson(defaultConfig));
+                if (configFile.exists()) {
+                    LogManager.logger.info("Backup existing config...");
+                    Files.copy(configFile.toPath(), new File(configDir, "backup_config_" + System.currentTimeMillis() +".json").toPath());
+                }
+                init();
                 return gson.fromJson(Files.readString(configFile.toPath()), Config.class);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+        }
+    }
+
+    public static void enable() {
+        try {
+            var current = read();
+            current.setMode(Config.Mode.ALL);
+            Files.writeString(configFile.toPath(), gson.toJson(current));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void enableWithoutLocation() {
+        try {
+            var current = read();
+            current.setMode(Config.Mode.WITHOUT_LOCATION);
+            Files.writeString(configFile.toPath(), gson.toJson(current));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void disable() {
+        try {
+            var current = read();
+            current.setMode(Config.Mode.NOTHING);
+            Files.writeString(configFile.toPath(), gson.toJson(current));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

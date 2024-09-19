@@ -1,0 +1,23 @@
+{
+  "chat.modname": "fStats",
+  "chat.mail.warning": "Never send mail to people that you don't trust!",
+  "chat.mail.open": "Open in Mail App",
+  "chat.mail.confirmTrusted": "Do you want to open this mail or copy it to your clipboard?",
+  "chat.mail.confirm": "Are you sure you want to open the following mail?",
+  "fstats_info.screen.title": "fStats Data Collection",
+  "fstats_info.screen.description": "Collecting this data helps developer improve their mods by guiding them in directions that are relevant to players",
+  "fstats_info.button.contact_developer": "Contact Developer",
+  "fstats_info.button.official_page": "Official Page",
+  "fstats_info.button.collect_mode": "Collect",
+  "fstats.event.world": "After entering world",
+  "fstats.event.world.description": "Next data will be collected anonymously after you spawn in world every",
+  "fstats.collect.country_code" : "Country Code",
+  "fstats.collect.fabric_api_version" : "Fabric API Version",
+  "fstats.collect.minecraft_version" : "Minecraft Version",
+  "fstats.collect.mod_version" : "Mod Version",
+  "fstats.collect.os" : "Operation System",
+  "fstats.collect.if_allowed": "If allowed",
+  "fstats.collect.if_installed": "If installed",
+  "fstats.collect.first_letter": "First letter",
+  "fstats.mods_use": "List of mods that use fStats"
+}

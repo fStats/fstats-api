@@ -10,8 +10,9 @@
   "contact": {
     "homepage": "https://fstats.dev/"
   },
+  "icon": "assets/fstats-api/textures/gui/fstats.png",
   "license": "MIT Licence",
-  "environment": "server",
+  "environment": "*",
   "custom": {
     "duckyupdater": {
       "modrinthId": "DkOr2M32"
@@ -23,7 +24,7 @@
   ],
   "depends": {
     "fabricloader": ">=${loaderVersion}",
-    "minecraft": ">=1.16.5",
+    "minecraft": ">=1.20",
     "java": ">=17"
   }
 }
