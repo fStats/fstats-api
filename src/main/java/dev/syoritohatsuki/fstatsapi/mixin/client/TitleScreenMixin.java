@@ -4,6 +4,7 @@ import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.client.gui.screen.FStatsScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -27,20 +28,31 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;"))
     private void addFStatsButton(CallbackInfo ci) {
-        if (client != null && client.getResourceManager().getResource(FSTATS_TEXTURE).isPresent())
-            addDrawableChild(new TexturedButtonWidget(
-                    this.width / 2 - 100 + 200 + 4,
-                    this.height / 4 + 24 * 2,
-                    20,
-                    20,
-                    -1,
-                    -1,
-                    0,
-                    FSTATS_TEXTURE,
-                    18,
-                    18,
-                    button -> client.setScreen(new FStatsScreen(this)),
-                    Text.literal("fStats")
-            ));
+        if (client == null) return;
+
+        if (client.getResourceManager().getResource(FSTATS_TEXTURE).isPresent()) {
+            addDrawableChild(
+                    new TexturedButtonWidget(
+                            this.width / 2 + 104,
+                            this.height / 4 + 48,
+                            20,
+                            20,
+                            0,
+                            0,
+                            0,
+                            FSTATS_TEXTURE,
+                            20,
+                            20,
+                            button -> client.setScreen(new FStatsScreen(this)),
+                            Text.literal("fStats")
+                    )
+            );
+        } else {
+            addDrawableChild(
+                    ButtonWidget.builder(Text.literal("fStats"), button -> this.client.setScreen(new FStatsScreen(this)))
+                            .dimensions(this.width / 2 + 104, this.height / 4 + 48, 42, 20)
+                            .build()
+            );
+        }
     }
 }
