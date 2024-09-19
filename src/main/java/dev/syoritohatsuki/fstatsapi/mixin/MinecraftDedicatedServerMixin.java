@@ -17,7 +17,6 @@ public abstract class MinecraftDedicatedServerMixin {
     private void afterSetupServer(CallbackInfoReturnable<Boolean> cir) {
 
         LogManager.init();
-        ConfigManager.init();
 
         if (!ConfigManager.read().isEnabled()) return;
 
