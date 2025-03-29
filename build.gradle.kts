@@ -18,6 +18,10 @@ val fabricLoaderVersion: String by project
 val mavenGroup: String by project
 group = mavenGroup
 
+repositories {
+    maven("https://maven.terraformersmc.com/releases/")
+}
+
 dependencies {
     val minecraftVersion: String by project
     minecraft("com.mojang", "minecraft", minecraftVersion)
@@ -26,6 +30,8 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
 
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
+
+    modApi("com.terraformersmc", "modmenu", "7.0.1")
 }
 
 tasks {

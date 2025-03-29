@@ -8,12 +8,28 @@
     "Syorito Hatsuki"
   ],
   "contact": {
-    "homepage": "https://fstats.dev/"
+    "homepage": "https://fstats.dev/",
+    "issues": "https://github.com/orgs/fStats/discussions",
+    "sources": "https://github.com/fStats"
   },
   "icon": "assets/fstats-api/textures/gui/fstats.png",
   "license": "MIT Licence",
   "environment": "*",
+  "entrypoints": {
+    "modmenu": [
+      "dev.syoritohatsuki.fstatsapi.client.FStatsModMenuIntegration"
+    ]
+  },
   "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/pbwnMwnUD6"
+      },
+      "badges": [
+        "library",
+        "deprecated"
+      ]
+    },
     "duckyupdater": {
       "modrinthId": "DkOr2M32"
     },
