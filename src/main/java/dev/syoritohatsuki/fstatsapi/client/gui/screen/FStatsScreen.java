@@ -80,7 +80,6 @@ public class FStatsScreen extends Screen {
         simplePositioningWidget.add(gridWidget3, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
         simplePositioningWidget.refreshPositions();
         FStatsWidget telemetryEventWidget = new FStatsWidget(0, 0, this.width - 40, gridWidget3.getY() - (gridWidget2.getY() + gridWidget2.getHeight()) - MARGIN * 2, this.client.textRenderer);
-        telemetryEventWidget.setMode(mode);
         telemetryEventWidget.setScrollY(this.scroll);
         telemetryEventWidget.setScrollConsumer(scroll -> this.scroll = scroll);
         this.setInitialFocus(telemetryEventWidget);
