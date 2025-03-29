@@ -21,7 +21,7 @@ public final class TextsWithFallbacks {
         entry("fstats_info.button.official_page", "Official Page"),
         entry("fstats_info.button.collect_mode", "Collect"),
         entry("fstats.event.world", "After entering world"),
-        entry("fstats.event.world.description", "Next data will be collected anonymously after you spawn in world every"),
+        entry("fstats.event.world.description", "Next data will be collected anonymously after you enter world"),
         entry("fstats.collect.country_code", "Country Code"),
         entry("fstats.collect.fabric_api_version", "Fabric API Version"),
         entry("fstats.collect.minecraft_version", "Minecraft Version"),
