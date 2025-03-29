@@ -49,7 +49,7 @@ public class FStatsScreen extends Screen {
         GridWidget gridWidget = simplePositioningWidget.add(new GridWidget(), simplePositioningWidget.copyPositioner().relative(0.5F, 0.0F));
         gridWidget.getMainPositioner().alignHorizontalCenter().marginBottom(MARGIN);
         GridWidget.Adder adder = gridWidget.createAdder(1);
-        adder.add(new TextWidget(this.getTitle(), this.textRenderer));
+        adder.add(new TextWidget(this.getTitle().copy().formatted(Formatting.YELLOW), this.textRenderer));
         adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - MARGIN * 2).setCentered(true));
         GridWidget gridWidget2 = this.createButtonRow(ButtonWidget.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
             if (confirmed) ConfirmMailScreen.open(DEVELOPER_MAIL);
@@ -60,7 +60,11 @@ public class FStatsScreen extends Screen {
         }, FStatsApi.OFFICIAL_PAGE_URL, true))).build());
         adder.add(gridWidget2);
         GridWidget gridWidget3 = this.createButtonRow(
-                CyclingButtonWidget.builder((Mode value) -> Text.literal(value.toString()))
+                CyclingButtonWidget.builder((Mode value) -> Text.literal(value.toString()).formatted(switch (value) {
+                            case ALL -> Formatting.GREEN;
+                            case WITHOUT_LOCATION -> Formatting.YELLOW;
+                            case NOTHING -> Formatting.RED;
+                        }))
                         .values(Mode.values())
                         .initially(mode)
                         .build(this.width / 2 - 155, 100, 150, 20, TextsWithFallbacks.COLLECT_MODE_TEXT, (button, mode) -> {
@@ -76,6 +80,7 @@ public class FStatsScreen extends Screen {
         simplePositioningWidget.add(gridWidget3, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
         simplePositioningWidget.refreshPositions();
         FStatsWidget telemetryEventWidget = new FStatsWidget(0, 0, this.width - 40, gridWidget3.getY() - (gridWidget2.getY() + gridWidget2.getHeight()) - MARGIN * 2, this.client.textRenderer);
+        telemetryEventWidget.setMode(mode);
         telemetryEventWidget.setScrollY(this.scroll);
         telemetryEventWidget.setScrollConsumer(scroll -> this.scroll = scroll);
         this.setInitialFocus(telemetryEventWidget);

@@ -1,6 +1,7 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
 import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
+import dev.syoritohatsuki.fstatsapi.config.Config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -87,34 +88,34 @@ public class FStatsWidget extends ScrollableWidget {
         builder.appendSpace(9 / 2);
         builder.appendTitle(this.textRenderer, PROPERTY_TITLE_TEXT, 2);
         builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.COUNTRY_CODE_TEXT)
+                .append(TextsWithFallbacks.COUNTRY_CODE_TEXT.formatted(Formatting.BLUE))
                 .append(ScreenTexts.SPACE)
                 .append(Text.literal("(")
                         .append(IF_ALLOWED_TEXT)
                         .append(Text.literal(")"))
-                        .formatted(Formatting.GRAY)
+                        .formatted(Formatting.DARK_GRAY)
                 )
         );
         builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.FABRIC_API_VERSION_TEXT)
+                .append(TextsWithFallbacks.FABRIC_API_VERSION_TEXT.formatted(Formatting.BLUE))
                 .append(ScreenTexts.SPACE)
                 .append(Text.literal("(")
                         .append(IF_INSTALLED_TEXT)
                         .append(Text.literal(")"))
-                        .formatted(Formatting.GRAY)
+                        .formatted(Formatting.DARK_GRAY)
                 )
         );
         builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.MOD_VERSION_TEXT));
+                .append(TextsWithFallbacks.MOD_VERSION_TEXT.formatted(Formatting.BLUE)));
         builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(MINECRAFT_VERSION_TEXT));
+                .append(MINECRAFT_VERSION_TEXT.formatted(Formatting.BLUE)));
         builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(OPERATION_SYSTEM_TEXT)
+                .append(OPERATION_SYSTEM_TEXT.formatted(Formatting.BLUE))
                 .append(ScreenTexts.SPACE)
                 .append(Text.literal("(")
                         .append(FIRST_LETTER_TEXT)
                         .append(Text.literal(")"))
-                        .formatted(Formatting.GRAY)
+                        .formatted(Formatting.DARK_GRAY)
                 )
         );
     }
@@ -127,7 +128,7 @@ public class FStatsWidget extends ScrollableWidget {
                 .stream()
                 .filter(modContainer -> modContainer.getMetadata().getCustomValue("fstats") != null)
                 .forEach(modContainer -> builder.appendTitle(this.textRenderer, Text.literal(modContainer.getMetadata().getName())
-                        .append(Text.literal(" (" + modContainer.getMetadata().getId() + ")").formatted(Formatting.GRAY))
+                        .append(Text.literal(" (" + modContainer.getMetadata().getId() + ")").formatted(Formatting.DARK_GRAY))
                 ));
     }
 
