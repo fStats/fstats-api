@@ -6,22 +6,21 @@ import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
+import java.util.function.Function;
+
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
-    @Shadow public abstract void setScreen(@Nullable Screen screen);
 
-    @Inject(method = "onInitFinished", at = @At(value = "HEAD"), cancellable = true)
-    private void initConfigManager(CallbackInfo ci) {
+    @Inject(method = "createInitScreens", at = @At(value = "HEAD"))
+    private void initConfigManager(List<Function<Runnable, Screen>> list, CallbackInfo ci) {
         if (!ConfigManager.configExists()) {
-            setScreen(new FStatsScreen(new TitleScreen()));
-            ci.cancel();
+            list.add(onClose -> new FStatsScreen(new TitleScreen()));
         }
     }
 

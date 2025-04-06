@@ -3,6 +3,8 @@ package dev.syoritohatsuki.fstatsapi.mixin.client;
 import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.client.gui.screen.FStatsScreen;
 import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -21,7 +23,7 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Unique
     @Final
-    private static Identifier FSTATS_TEXTURE = Identifier.of(FStatsApi.MOD_ID, "textures/gui/fstats.png");
+    private static Identifier FSTATS_TEXTURE = Identifier.of(FStatsApi.MOD_ID, "fstats");
 
     protected TitleScreenMixin(Text title) {
         super(title);
@@ -31,19 +33,14 @@ public abstract class TitleScreenMixin extends Screen {
     private void addFStatsButton(CallbackInfo ci) {
         if (client == null) return;
 
-        if (client.getResourceManager().getResource(FSTATS_TEXTURE).isPresent()) {
+        if (FabricLoader.getInstance().isModLoaded("fabric-api")) {
             addDrawableChild(
                     new TexturedButtonWidget(
                             this.width / 2 + 104,
                             this.height / 4 + 48,
                             20,
                             20,
-                            0,
-                            0,
-                            0,
-                            FSTATS_TEXTURE,
-                            20,
-                            20,
+                            new ButtonTextures(FSTATS_TEXTURE, FSTATS_TEXTURE),
                             button -> client.setScreen(new FStatsScreen(this)),
                             TextsWithFallbacks.MOD_NAME_TEXT
                     )

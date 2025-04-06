@@ -12,7 +12,7 @@
     "issues": "https://github.com/orgs/fStats/discussions",
     "sources": "https://github.com/fStats"
   },
-  "icon": "assets/fstats-api/textures/gui/fstats.png",
+  "icon": "assets/fstats-api/textures/gui/sprites/fstats.png",
   "license": "MIT Licence",
   "environment": "*",
   "entrypoints": {
