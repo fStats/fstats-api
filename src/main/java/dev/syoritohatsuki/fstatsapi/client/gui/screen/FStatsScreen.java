@@ -96,7 +96,7 @@ public class FStatsScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(context);
+        renderDarkening(context);
         super.render(context, mouseX, mouseY, delta);
     }
 

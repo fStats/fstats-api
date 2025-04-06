@@ -31,11 +31,11 @@ dependencies {
 
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
 
-    modApi("com.terraformersmc", "modmenu", "8.0.1")
+    modApi("com.terraformersmc", "modmenu", "10.0.0")
 }
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_17
+    val javaVersion = JavaVersion.VERSION_21
 
     withType<JavaCompile> {
         options.encoding = "UTF-8"
