@@ -1,7 +1,6 @@
 package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
 import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
-import dev.syoritohatsuki.fstatsapi.config.Config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
@@ -21,7 +20,7 @@ import java.util.function.DoubleConsumer;
 import static dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks.*;
 
 @Environment(EnvType.CLIENT)
-public class FStatsWidget extends ScrollableWidget {
+public class FStatsWidget extends ScrollableTextFieldWidget {
     private static final int MARGIN_X = 32;
     private static final Text PROPERTY_TITLE_TEXT = Text.translatable("telemetry_info.property_title").formatted(Formatting.UNDERLINE);
     private final TextRenderer textRenderer;
@@ -50,7 +49,7 @@ public class FStatsWidget extends ScrollableWidget {
     }
 
     @Override
-    protected void setScrollY(double scrollY) {
+    public void setScrollY(double scrollY) {
         super.setScrollY(scrollY);
         if (this.scrollConsumer != null) {
             this.scrollConsumer.accept(this.getScrollY());
@@ -133,7 +132,7 @@ public class FStatsWidget extends ScrollableWidget {
     }
 
     private int getGridWidth() {
-        return this.width - this.getPaddingDoubled();
+        return this.width - this.getPadding();
     }
 
     @Environment(EnvType.CLIENT)
