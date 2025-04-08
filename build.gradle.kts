@@ -31,7 +31,7 @@ dependencies {
 
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
 
-    modApi("com.terraformersmc", "modmenu", "10.0.0")
+    modApi("com.terraformersmc", "modmenu", "12.0.0")
 }
 
 tasks {
