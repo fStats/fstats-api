@@ -6,7 +6,6 @@ import dev.syoritohatsuki.fstatsapi.config.Config.Mode;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.*;
@@ -92,12 +91,6 @@ public class FStatsScreen extends Screen {
     @Override
     public void close() {
         this.client.setScreen(this.parent);
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderDarkening(context);
-        super.render(context, mouseX, mouseY, delta);
     }
 
     private GridWidget createButtonRow(ClickableWidget... button) {
