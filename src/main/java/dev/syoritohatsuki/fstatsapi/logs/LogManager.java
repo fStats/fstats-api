@@ -32,7 +32,7 @@ public class LogManager {
         try {
             var lines = Files.readAllLines(logFile.toPath());
             if (lines.isEmpty()) return null;
-            return lines.get(lines.size() - 1);
+            return lines.getLast();
         } catch (IOException e) {
             logger.warn("Can't get latest log");
             logger.warn(e);

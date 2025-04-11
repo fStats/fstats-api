@@ -6,7 +6,6 @@ import dev.syoritohatsuki.fstatsapi.config.Config.Mode;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.*;
@@ -46,20 +45,25 @@ public class FStatsScreen extends Screen {
         SimplePositioningWidget simplePositioningWidget = new SimplePositioningWidget();
         simplePositioningWidget.getMainPositioner().margin(MARGIN);
         simplePositioningWidget.setMinHeight(this.height);
+
         GridWidget gridWidget = simplePositioningWidget.add(new GridWidget(), simplePositioningWidget.copyPositioner().relative(0.5F, 0.0F));
         gridWidget.getMainPositioner().alignHorizontalCenter().marginBottom(MARGIN);
+
         GridWidget.Adder adder = gridWidget.createAdder(1);
         adder.add(new TextWidget(this.getTitle().copy().formatted(Formatting.YELLOW), this.textRenderer));
         adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - MARGIN * 2).setCentered(true));
-        GridWidget gridWidget2 = this.createButtonRow(ButtonWidget.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
+
+        GridWidget contactGridRow = this.createButtonRow(ButtonWidget.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
             if (confirmed) ConfirmMailScreen.open(DEVELOPER_MAIL);
             this.client.setScreen(this);
         }, DEVELOPER_MAIL, true))).build(), ButtonWidget.builder(TextsWithFallbacks.OFFICIAL_PAGE_TEXT, button -> this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
             if (confirmed) Util.getOperatingSystem().open(FStatsApi.OFFICIAL_PAGE_URL);
             this.client.setScreen(this);
         }, FStatsApi.OFFICIAL_PAGE_URL, true))).build());
-        adder.add(gridWidget2);
-        GridWidget gridWidget3 = this.createButtonRow(
+
+        adder.add(contactGridRow);
+
+        GridWidget accessAndNavigationGridRow = this.createButtonRow(
                 CyclingButtonWidget.builder((Mode value) -> Text.literal(value.toString()).formatted(switch (value) {
                             case ALL -> Formatting.GREEN;
                             case WITHOUT_LOCATION -> Formatting.YELLOW;
@@ -77,13 +81,15 @@ public class FStatsScreen extends Screen {
                         }),
                 ButtonWidget.builder(ScreenTexts.TO_TITLE, button -> close()).build()
         );
-        simplePositioningWidget.add(gridWidget3, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
+        simplePositioningWidget.add(accessAndNavigationGridRow, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
         simplePositioningWidget.refreshPositions();
-        FStatsWidget telemetryEventWidget = new FStatsWidget(0, 0, this.width - 40, gridWidget3.getY() - (gridWidget2.getY() + gridWidget2.getHeight()) - MARGIN * 2, this.client.textRenderer);
-        telemetryEventWidget.setScrollY(this.scroll);
-        telemetryEventWidget.setScrollConsumer(scroll -> this.scroll = scroll);
-        this.setInitialFocus(telemetryEventWidget);
-        adder.add(telemetryEventWidget);
+
+        FStatsWidget fStatsWidget = new FStatsWidget(0, 0, this.width - 40, accessAndNavigationGridRow.getY() - (contactGridRow.getY() + contactGridRow.getHeight()) - MARGIN * 2, this.client.textRenderer);
+        fStatsWidget.setScrollY(this.scroll);
+        fStatsWidget.setScrollConsumer(scroll -> this.scroll = scroll);
+        this.setInitialFocus(fStatsWidget);
+        adder.add(fStatsWidget);
+
         simplePositioningWidget.refreshPositions();
         SimplePositioningWidget.setPos(simplePositioningWidget, 0, 0, this.width, this.height, 0.5F, 0.0F);
         simplePositioningWidget.forEachChild(this::addDrawableChild);
@@ -91,13 +97,7 @@ public class FStatsScreen extends Screen {
 
     @Override
     public void close() {
-        this.client.setScreen(this.parent);
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderDarkening(context);
-        super.render(context, mouseX, mouseY, delta);
+        if (this.client != null) this.client.setScreen(this.parent);
     }
 
     private GridWidget createButtonRow(ClickableWidget... button) {
