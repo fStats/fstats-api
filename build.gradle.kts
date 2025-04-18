@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("fabric-loom")
-    kotlin("jvm")
 }
 
 base {
@@ -12,8 +9,6 @@ base {
 
 val modVersion: String by project
 version = modVersion
-
-val fabricLoaderVersion: String by project
 
 val mavenGroup: String by project
 group = mavenGroup
@@ -29,25 +24,21 @@ dependencies {
     val yarnMappings: String by project
     mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
 
+    val fabricLoaderVersion: String by project
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
 
-    modApi("com.terraformersmc", "modmenu", "12.0.0")
+    val modmenuVersion: String by project
+    modApi("com.terraformersmc", "modmenu", modmenuVersion)
 }
 
 tasks {
     val javaVersion = JavaVersion.VERSION_21
 
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        sourceCompatibility = javaVersion.toString()
-        targetCompatibility = javaVersion.toString()
-        options.release = javaVersion.toString().toInt()
-    }
-
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        compilerOptions {
-            jvmTarget = JvmTarget.fromTarget(javaVersion.toString())
-        }
+    java {
+        toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        withSourcesJar()
     }
 
     jar {
@@ -56,19 +47,14 @@ tasks {
 
     processResources {
         filesMatching("fabric.mod.json") {
-            expand(
-                mutableMapOf(
-                    "version" to project.version,
-                    "loaderVersion" to fabricLoaderVersion
-                )
-            )
+            expand(mutableMapOf("version" to project.version,))
         }
     }
 
-    java {
-        toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-        withSourcesJar()
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        sourceCompatibility = javaVersion.toString()
+        targetCompatibility = javaVersion.toString()
+        options.release = javaVersion.toString().toInt()
     }
 }
