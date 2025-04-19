@@ -21,14 +21,9 @@ public class FStatsApi {
 
     private static final int requestSendDelay = 1000 * 60 * 30;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static ScheduledFuture<?> requestSendingTaskFuture = null;
 
     public static ScheduledExecutorService getScheduler() {
         return scheduler;
-    }
-
-    public static ScheduledFuture<?> getRequestSendingTaskFuture() {
-        return requestSendingTaskFuture;
     }
 
     public static void sendMetricRequest() {
@@ -44,7 +39,7 @@ public class FStatsApi {
             nextStepTime = nextStepTime + TimeUnit.MINUTES.toMillis(ThreadLocalRandom.current().nextInt(30, 41)) - diff;
         }
 
-        requestSendingTaskFuture = scheduler.scheduleAtFixedRate(() -> {
+        scheduler.scheduleAtFixedRate(() -> {
             try {
                 var client = HttpClient.newHttpClient();
                 var url = URI.create(API_URL + "v3/metrics");

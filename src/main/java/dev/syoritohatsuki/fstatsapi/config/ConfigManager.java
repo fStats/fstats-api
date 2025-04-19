@@ -21,10 +21,6 @@ public final class ConfigManager {
 
     private static final Config defaultConfig = new Config(2, Config.Mode.ALL, new Config.Messages(true, true, true));
 
-    public static boolean configExists() {
-        return configFile.exists();
-    }
-
     public static void init() {
         if (!configDir.exists() && !configDir.mkdirs()) {
             LogManager.logger.warn("Can't create config dirs");
@@ -71,36 +67,6 @@ public final class ConfigManager {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }
-    }
-
-    public static void enable() {
-        try {
-            var current = read();
-            current.setMode(Config.Mode.ALL);
-            Files.writeString(configFile.toPath(), gson.toJson(current));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void enableWithoutLocation() {
-        try {
-            var current = read();
-            current.setMode(Config.Mode.WITHOUT_LOCATION);
-            Files.writeString(configFile.toPath(), gson.toJson(current));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void disable() {
-        try {
-            var current = read();
-            current.setMode(Config.Mode.NOTHING);
-            Files.writeString(configFile.toPath(), gson.toJson(current));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }
