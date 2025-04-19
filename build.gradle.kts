@@ -26,9 +26,6 @@ dependencies {
 
     val fabricLoaderVersion: String by project
     modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
-
-    val modmenuVersion: String by project
-    modApi("com.terraformersmc", "modmenu", modmenuVersion)
 }
 
 tasks {
