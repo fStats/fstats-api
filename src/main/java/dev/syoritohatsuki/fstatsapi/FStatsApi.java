@@ -50,12 +50,6 @@ public class FStatsApi {
                 var url = URI.create(API_URL + "v3/metrics");
                 var postBody = HttpRequest.BodyPublishers.ofString(Request.getJson());
 
-                if (ConfigManager.read().getMessages().isInfosEnabled()) {
-                    LogManager.logger.info("-----[ \u001B[36m\u001B[1mRequest Json ]-----");
-                    LogManager.logger.info(Request.getJson());
-                    LogManager.logger.info("--------------------------");
-                }
-
                 var response = client.send(HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json").header("User-Agent", USER_AGENT).POST(postBody).build(), HttpResponse.BodyHandlers.ofString());
 
                 if (!response.body().contains("201")) {
