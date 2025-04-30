@@ -1,6 +1,7 @@
 package dev.syoritohatsuki.fstatsapi.network;
 
 import com.google.gson.GsonBuilder;
+import dev.syoritohatsuki.fstatsapi.client.util.SessionMonitor;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.dto.Metrics;
 import dev.syoritohatsuki.fstatsapi.logs.LogManager;
@@ -34,7 +35,7 @@ public class Request {
 
     private static Boolean getOnlineMode() {
         if (isServerSide()) return ServerPropertiesHandler.load(Paths.get("server.properties")).onlineMode;
-        else return null;
+        return SessionMonitor.isOnline();
     }
 
     private static char getOperatingSystem() {
