@@ -1,0 +1,76 @@
+name: i18n Checklist
+
+on:
+  pull_request:
+    paths:
+      - "src/main/resources/assets/fstats-api/lang/*.json"
+
+jobs:
+  check-i18n:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Detect new languages
+        id: detect_langs
+        run: |
+          mkdir -p .tmp
+
+          # Get new/modified files in the lang folder
+          lang_dir="src/main/resources/assets/fstats-api/lang"
+          langs=""
+
+          for file in $(git diff --name-only origin/main HEAD | grep "^$lang_dir/.*\.json$"); do
+            filename=$(basename "$file")
+            lang_code="${filename%.*}"
+
+            if [[ "$lang_code" != "en_us" ]]; then
+              langs="$langs $lang_code"
+            fi
+          done
+
+          langs=$(echo "$langs" | xargs) # trim
+          echo "langs=$langs" >> $GITHUB_OUTPUT
+
+      - name: Generate checklist
+        if: steps.detect_langs.outputs.langs != ''
+        run: |
+          langs="${{ steps.detect_langs.outputs.langs }}"
+          ref_file="src/main/resources/assets/fstats-api/lang/en_us.json"
+          checklist=""
+
+          for lang in $langs; do
+            lang_file="src/main/resources/assets/fstats-api/lang/${lang}.json"
+
+            file_check="[ ]"
+            keys_check="[ ]"
+            test_check="[ ]"
+            visible_check="[ ]"
+
+            [ -f "$lang_file" ] && file_check="[x]"
+
+            if [ -f "$lang_file" ] && jq -e type "$lang_file" >/dev/null 2>&1; then
+              missing_keys=$(jq -r 'keys_unsorted' "$ref_file" | jq -s 'add - (input | add)' "$lang_file" | jq 'length')
+              [ "$missing_keys" -lt 5 ] && keys_check="[x]"
+            fi
+
+            checklist+="### Language: \`$lang\`\n"
+            checklist+="- $file_check Created \`${lang}.json\` in \`lang/\`\n"
+            checklist+="- $keys_check Based on \`en_us.json\` keys\n"
+            checklist+="- $test_check Ran with \`gradle runClient\` or \`runServer\`\n"
+            checklist+="- $visible_check Language appears and works correctly in-game\n\n"
+          done
+
+          echo "$checklist" > checklist.md
+
+      - name: Comment on PR
+        if: steps.detect_langs.outputs.langs != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: checklist.md
+          edit-mode: replace
