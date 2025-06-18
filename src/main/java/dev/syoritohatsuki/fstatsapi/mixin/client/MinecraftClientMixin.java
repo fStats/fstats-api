@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Function;
@@ -18,7 +19,7 @@ import java.util.function.Function;
 public abstract class MinecraftClientMixin {
 
     @Inject(method = "createInitScreens", at = @At(value = "HEAD"))
-    private void initConfigManager(List<Function<Runnable, Screen>> list, CallbackInfo ci) {
+    private void initConfigManager(List<Function<Runnable, Screen>> list, CallbackInfoReturnable<Boolean> cir) {
         if (!ConfigManager.configExists()) {
             list.add(onClose -> new FStatsScreen(new TitleScreen()));
         }

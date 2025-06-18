@@ -70,10 +70,10 @@ public class FStatsWidget extends ScrollableTextFieldWidget {
     protected void renderContents(DrawContext context, int mouseX, int mouseY, float delta) {
         int xWithPadding = this.getX() + this.getPadding();
         int yWithPadding = this.getY() + this.getPadding();
-        context.getMatrices().push();
-        context.getMatrices().translate(xWithPadding, yWithPadding, 0.0);
+        context.getMatrices().pushMatrix();
+        context.getMatrices().translate(xWithPadding, yWithPadding);
         this.contents.grid().forEachChild(widget -> widget.render(context, mouseX, mouseY, delta));
-        context.getMatrices().pop();
+        context.getMatrices().popMatrix();
     }
 
     @Override
