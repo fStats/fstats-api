@@ -29,7 +29,7 @@ public class Request {
     }
 
     private static String getMinecraftVersion() {
-        return SharedConstants.getGameVersion().getName();
+        return SharedConstants.getGameVersion().name();
     }
 
     private static Boolean getOnlineMode() {
