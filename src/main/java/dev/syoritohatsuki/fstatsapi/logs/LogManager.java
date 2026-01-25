@@ -20,7 +20,9 @@ public class LogManager {
         if (logFile.exists()) return;
 
         try {
-            if (!logFile.createNewFile()) logger.warn("Can't create log file");
+            if (!logFile.createNewFile()) {
+                logger.warn("Can't create log file ({})", logFile.getAbsolutePath());
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -34,7 +36,7 @@ public class LogManager {
             if (lines.isEmpty()) return null;
             return lines.getLast();
         } catch (IOException e) {
-            logger.warn("Can't get latest log");
+            logger.warn("Can't get latest log ({})", logFile.getAbsolutePath());
             logger.warn(e);
             return null;
         }
@@ -42,14 +44,14 @@ public class LogManager {
 
     public static void writeLog(String message) {
         if (!logFile.canWrite()) {
-            logger.warn("Can't access to log file");
+            logger.warn("Can't access to log file ({})", logFile.getAbsolutePath());
             return;
         }
 
         try (FileWriter fileWriter = new FileWriter(logFile, true)) {
             fileWriter.write(now + "," + message + System.lineSeparator());
         } catch (IOException e) {
-            logger.warn("Can't write log to file");
+            logger.warn("Can't write log to file ({})", logFile.getAbsolutePath());
             logger.warn(e);
         }
     }
