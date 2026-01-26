@@ -16,6 +16,8 @@ import net.minecraft.util.Util;
 
 import java.util.Objects;
 
+import static dev.syoritohatsuki.fstatsapi.config.Config.Mode.*;
+
 @Environment(EnvType.CLIENT)
 public class FStatsScreen extends Screen {
     private static final int MARGIN = 8;
@@ -24,7 +26,7 @@ public class FStatsScreen extends Screen {
 
     private static final String DEVELOPER_MAIL = "kit.lehto.d@gmail.com";
 
-    private Mode mode = Objects.requireNonNullElse(ConfigManager.read().getMode(), Mode.ALL);
+    private Mode mode = Objects.requireNonNullElse(ConfigManager.read().getMode(), ALL);
     private final Screen parent;
     private double scroll;
 
@@ -64,23 +66,24 @@ public class FStatsScreen extends Screen {
         adder.add(contactGridRow);
 
         GridWidget accessAndNavigationGridRow = this.createButtonRow(
-                CyclingButtonWidget.builder((Mode value) -> Text.literal(value.toString()).formatted(switch (value) {
+                CyclingButtonWidget.builder(value -> Text.literal(value.toString()).formatted(switch (value) {
                             case ALL -> Formatting.GREEN;
                             case WITHOUT_LOCATION -> Formatting.YELLOW;
                             case NOTHING -> Formatting.RED;
-                        }))
-                        .values(Mode.values())
-                        .initially(mode)
+                        }), mode)
+                        .values(values())
                         .build(this.width / 2 - 155, 100, 150, 20, TextsWithFallbacks.COLLECT_MODE_TEXT, (button, mode) -> {
                             this.mode = mode;
                             switch (mode) {
                                 case ALL -> ConfigManager.enable();
                                 case WITHOUT_LOCATION -> ConfigManager.enableWithoutLocation();
                                 case NOTHING -> ConfigManager.disable();
+                                default -> throw new IllegalStateException("Unexpected value: " + mode);
                             }
                         }),
                 ButtonWidget.builder(ScreenTexts.TO_TITLE, button -> close()).build()
         );
+
         simplePositioningWidget.add(accessAndNavigationGridRow, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
         simplePositioningWidget.refreshPositions();
 

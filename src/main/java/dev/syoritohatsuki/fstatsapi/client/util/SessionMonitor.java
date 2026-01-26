@@ -14,7 +14,7 @@ public final class SessionMonitor {
         final var session = MinecraftClient.getInstance().getSession();
         final var uuidString = UUID.randomUUID().toString();
 
-        final var sessionService = (YggdrasilMinecraftSessionService) MinecraftClient.getInstance().getSessionService();
+        final var sessionService = (YggdrasilMinecraftSessionService) MinecraftClient.getInstance().getApiServices().sessionService();
         try {
             sessionService.joinServer(session.getUuidOrNull(), session.getAccessToken(), uuidString);
             if (sessionService.hasJoinedServer(session.getUsername(), uuidString, null) != null) {
