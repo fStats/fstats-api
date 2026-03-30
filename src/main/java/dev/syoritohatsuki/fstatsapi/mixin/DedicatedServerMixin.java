@@ -3,17 +3,17 @@ package dev.syoritohatsuki.fstatsapi.mixin;
 import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import dev.syoritohatsuki.fstatsapi.logs.LogManager;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(MinecraftDedicatedServer.class)
-public abstract class MinecraftDedicatedServerMixin {
+@Mixin(DedicatedServer.class)
+public abstract class DedicatedServerMixin {
 
-    @Inject(method = "setupServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/MinecraftDedicatedServer;loadWorld()V", shift = At.Shift.AFTER))
+    @Inject(method = "initServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedServer;loadLevel()V", shift = At.Shift.AFTER))
     private void afterSetupServer(CallbackInfoReturnable<Boolean> cir) {
 
         LogManager.init();
@@ -39,7 +39,7 @@ public abstract class MinecraftDedicatedServerMixin {
         FStatsApi.sendMetricRequest();
     }
 
-    @Inject(method = "shutdown", at = @At("HEAD"))
+    @Inject(method = "stopServer", at = @At("HEAD"))
     private void onShutdown(CallbackInfo ci) {
         LogManager.logger.info("Stopping fStats");
         FStatsApi.getScheduler().shutdown();

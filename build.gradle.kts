@@ -1,43 +1,37 @@
+val archivesBaseName: String by project
+val mavenGroup: String by project
+val modVersion: String by project
+
+val javaVersion = JavaVersion.VERSION_25
+
 plugins {
-    id("fabric-loom")
+    alias(libs.plugins.fabric.loom)
 }
 
 base {
-    val archivesBaseName: String by project
     archivesName.set(archivesBaseName)
 }
 
-val modVersion: String by project
-version = modVersion
-
-val mavenGroup: String by project
 group = mavenGroup
+version = modVersion
 
 repositories {
     maven("https://maven.terraformersmc.com/releases/")
 }
 
 dependencies {
-    val minecraftVersion: String by project
-    minecraft("com.mojang", "minecraft", minecraftVersion)
+    minecraft(libs.minecraft)
+    implementation(libs.fabric.loader)
+}
 
-    val yarnMappings: String by project
-    mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
-
-    val fabricLoaderVersion: String by project
-    modImplementation("net.fabricmc", "fabric-loader", fabricLoaderVersion)
+java {
+    toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    withSourcesJar()
 }
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_21
-
-    java {
-        toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-        withSourcesJar()
-    }
-
     jar {
         from("LICENSE")
     }
