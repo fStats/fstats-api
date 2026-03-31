@@ -6,13 +6,16 @@ import dev.syoritohatsuki.fstatsapi.config.Config.Mode;
 import dev.syoritohatsuki.fstatsapi.config.ConfigManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -20,94 +23,97 @@ import static dev.syoritohatsuki.fstatsapi.config.Config.Mode.*;
 
 @Environment(EnvType.CLIENT)
 public class FStatsScreen extends Screen {
-    private static final int MARGIN = 8;
-
-    private static final Text DESCRIPTION_TEXT = TextsWithFallbacks.DESCRIPTION_TEXT.formatted(Formatting.GRAY);
-
+    private static final Component TITLE_TEXT = TextsWithFallbacks.TITLE_TEXT.withStyle(ChatFormatting.YELLOW);
+    private static final Component DESCRIPTION_TEXT = TextsWithFallbacks.DESCRIPTION_TEXT.withStyle(ChatFormatting.GRAY);
     private static final String DEVELOPER_MAIL = "kit.lehto.d@gmail.com";
-
-    private Mode mode = Objects.requireNonNullElse(ConfigManager.read().getMode(), ALL);
     private final Screen parent;
-    private double scroll;
+    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(
+            this, 16 + 9 * 5 + 20, 33
+    );
+    private Mode mode = Objects.requireNonNullElse(ConfigManager.read().getMode(), ALL);
+    @Nullable
+    private FStatsWidget fStatsWidget;
+    @Nullable
+    private MultiLineTextWidget description;
+    private double savedScroll;
 
     public FStatsScreen(Screen parent) {
-        super(TextsWithFallbacks.TITLE_TEXT);
+        super(TITLE_TEXT);
         this.parent = parent;
     }
 
     @Override
-    public Text getNarratedTitle() {
-        return ScreenTexts.joinSentences(super.getNarratedTitle(), DESCRIPTION_TEXT);
+    public @NonNull Component getNarrationMessage() {
+        return CommonComponents.joinForNarration(super.getNarrationMessage(), DESCRIPTION_TEXT);
     }
 
     @Override
     protected void init() {
-        if (client == null) return;
+        LinearLayout header = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
+        header.defaultCellSetting().alignHorizontallyCenter();
+        header.addChild(new StringWidget(TITLE_TEXT, this.font));
 
-        SimplePositioningWidget simplePositioningWidget = new SimplePositioningWidget();
-        simplePositioningWidget.getMainPositioner().margin(MARGIN);
-        simplePositioningWidget.setMinHeight(this.height);
+        this.description = header.addChild(new MultiLineTextWidget(DESCRIPTION_TEXT, this.font).setCentered(true));
 
-        GridWidget gridWidget = simplePositioningWidget.add(new GridWidget(), simplePositioningWidget.copyPositioner().relative(0.5F, 0.0F));
-        gridWidget.getMainPositioner().alignHorizontalCenter().marginBottom(MARGIN);
+        LinearLayout upperContentButtons = header.addChild(LinearLayout.horizontal().spacing(8));
+        upperContentButtons.addChild(Button.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, _ -> ConfirmMailScreen.open(this, DEVELOPER_MAIL, true)).build());
+        upperContentButtons.addChild(Button.builder(TextsWithFallbacks.OFFICIAL_PAGE_TEXT, _ -> ConfirmLinkScreen.confirmLinkNow(this, FStatsApi.OFFICIAL_PAGE_URL, true)).build());
 
-        GridWidget.Adder adder = gridWidget.createAdder(1);
-        adder.add(new TextWidget(this.getTitle().copy().formatted(Formatting.YELLOW), this.textRenderer));
-        adder.add(new MultilineTextWidget(DESCRIPTION_TEXT, this.textRenderer).setMaxWidth(this.width - MARGIN * 2).setCentered(true));
-
-        GridWidget contactGridRow = this.createButtonRow(ButtonWidget.builder(TextsWithFallbacks.CONTACT_DEVELOPER_TEXT, button -> this.client.setScreen(new ConfirmMailScreen(confirmed -> {
-            if (confirmed) ConfirmMailScreen.open(DEVELOPER_MAIL);
-            this.client.setScreen(this);
-        }, DEVELOPER_MAIL, true))).build(), ButtonWidget.builder(TextsWithFallbacks.OFFICIAL_PAGE_TEXT, button -> this.client.setScreen(new ConfirmLinkScreen(confirmed -> {
-            if (confirmed) Util.getOperatingSystem().open(FStatsApi.OFFICIAL_PAGE_URL);
-            this.client.setScreen(this);
-        }, FStatsApi.OFFICIAL_PAGE_URL, true))).build());
-
-        adder.add(contactGridRow);
-
-        GridWidget accessAndNavigationGridRow = this.createButtonRow(
-                CyclingButtonWidget.builder(value -> Text.literal(value.toString()).formatted(switch (value) {
-                            case ALL -> Formatting.GREEN;
-                            case WITHOUT_LOCATION -> Formatting.YELLOW;
-                            case NOTHING -> Formatting.RED;
-                        }), mode)
-                        .values(values())
-                        .build(this.width / 2 - 155, 100, 150, 20, TextsWithFallbacks.COLLECT_MODE_TEXT, (button, mode) -> {
-                            this.mode = mode;
-                            switch (mode) {
-                                case ALL -> ConfigManager.enable();
-                                case WITHOUT_LOCATION -> ConfigManager.enableWithoutLocation();
-                                case NOTHING -> ConfigManager.disable();
-                                default -> throw new IllegalStateException("Unexpected value: " + mode);
-                            }
-                        }),
-                ButtonWidget.builder(ScreenTexts.TO_TITLE, button -> close()).build()
+        LinearLayout footer = this.layout.addToFooter(LinearLayout.vertical().spacing(4));
+        LinearLayout footerButtons = footer.addChild(LinearLayout.horizontal().spacing(8));
+        footerButtons.addChild(
+            CycleButton.builder(value -> Component.literal(value.toString()).withStyle(switch (value) {
+                case ALL -> ChatFormatting.GREEN;
+                case WITHOUT_LOCATION -> ChatFormatting.YELLOW;
+                case NOTHING -> ChatFormatting.RED;
+            }), mode)
+            .withValues(values())
+            .create(this.width / 2 - 155, 100, 150, 20, TextsWithFallbacks.COLLECT_MODE_TEXT, (_, mode) -> {
+                this.mode = mode;
+                switch (mode) {
+                    case ALL -> ConfigManager.enable();
+                    case WITHOUT_LOCATION -> ConfigManager.enableWithoutLocation();
+                    case NOTHING -> ConfigManager.disable();
+                    default -> throw new IllegalStateException("Unexpected value: " + mode);
+                }
+            })
         );
+        footerButtons.addChild(Button.builder(CommonComponents.GUI_TO_TITLE, _ -> this.onClose()).build());
 
-        simplePositioningWidget.add(accessAndNavigationGridRow, simplePositioningWidget.copyPositioner().relative(0.5F, 1.0F));
-        simplePositioningWidget.refreshPositions();
+        LinearLayout content = this.layout.addToContents(LinearLayout.vertical().spacing(8));
+        this.fStatsWidget = content.addChild(new FStatsWidget(0, 0, this.width - 40, this.layout.getContentHeight(), this.font));
+        this.fStatsWidget.setScrollConsumer(scroll -> this.savedScroll = scroll);
+        this.layout.visitWidgets(this::addRenderableWidget);
+        this.repositionElements();
+    }
 
-        FStatsWidget fStatsWidget = new FStatsWidget(0, 0, this.width - 40, accessAndNavigationGridRow.getY() - (contactGridRow.getY() + contactGridRow.getHeight()) - MARGIN * 2, this.client.textRenderer);
-        fStatsWidget.setScrollY(this.scroll);
-        fStatsWidget.setScrollConsumer(scroll -> this.scroll = scroll);
-        this.setInitialFocus(fStatsWidget);
-        adder.add(fStatsWidget);
 
-        simplePositioningWidget.refreshPositions();
-        SimplePositioningWidget.setPos(simplePositioningWidget, 0, 0, this.width, this.height, 0.5F, 0.0F);
-        simplePositioningWidget.forEachChild(this::addDrawableChild);
+    @Override
+    protected void repositionElements() {
+        if (this.fStatsWidget != null) {
+            this.fStatsWidget.setScrollAmount(this.savedScroll);
+            this.fStatsWidget.setWidth(this.width - 40);
+            this.fStatsWidget.setHeight(this.layout.getContentHeight());
+            this.fStatsWidget.updateLayout();
+        }
+
+        if (this.description != null) {
+            this.description.setMaxWidth(this.width - 16);
+        }
+
+        this.layout.arrangeElements();
     }
 
     @Override
-    public void close() {
-        if (this.client != null) this.client.setScreen(this.parent);
+    protected void setInitialFocus() {
+        if (this.fStatsWidget != null) {
+            this.setInitialFocus(this.fStatsWidget);
+        }
     }
 
-    private GridWidget createButtonRow(ClickableWidget... button) {
-        GridWidget gridWidget = new GridWidget();
-        gridWidget.getMainPositioner().alignHorizontalCenter().marginX(MARGIN / 2);
-        for (int i = 0; i < button.length; i++) gridWidget.add(button[i], 0, i);
-        return gridWidget;
+    @Override
+    public void onClose() {
+        this.minecraft.setScreen(this.parent);
     }
 }
 

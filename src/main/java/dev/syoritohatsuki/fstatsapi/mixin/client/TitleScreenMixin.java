@@ -4,13 +4,12 @@ import dev.syoritohatsuki.fstatsapi.FStatsApi;
 import dev.syoritohatsuki.fstatsapi.client.gui.screen.FStatsScreen;
 import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -23,32 +22,30 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Unique
     @Final
-    private static Identifier FSTATS_TEXTURE = Identifier.of(FStatsApi.MOD_ID, "fstats");
+    private static Identifier FSTATS_TEXTURE = Identifier.fromNamespaceAndPath(FStatsApi.MOD_ID, "fstats");
 
-    protected TitleScreenMixin(Text title) {
+    protected TitleScreenMixin(Component title) {
         super(title);
     }
 
-    @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;"))
+    @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;"))
     private void addFStatsButton(CallbackInfo ci) {
-        if (client == null) return;
-
         if (FabricLoader.getInstance().isModLoaded("fabric-api")) {
-            addDrawableChild(
-                    new TexturedButtonWidget(
+            addRenderableWidget(
+                    new ImageButton(
                             this.width / 2 + 104,
                             this.height / 4 + 48,
                             20,
                             20,
-                            new ButtonTextures(FSTATS_TEXTURE, FSTATS_TEXTURE),
-                            button -> client.setScreen(new FStatsScreen(this)),
+                            new WidgetSprites(FSTATS_TEXTURE, FSTATS_TEXTURE),
+                            _ -> minecraft.setScreen(new FStatsScreen(this)),
                             TextsWithFallbacks.MOD_NAME_TEXT
                     )
             );
         } else {
-            addDrawableChild(
-                    ButtonWidget.builder(TextsWithFallbacks.MOD_NAME_TEXT, button -> this.client.setScreen(new FStatsScreen(this)))
-                            .dimensions(this.width / 2 + 104, this.height / 4 + 48, 42, 20)
+            addRenderableWidget(
+                    ImageButton.builder(TextsWithFallbacks.MOD_NAME_TEXT, _ -> minecraft.setScreen(new FStatsScreen(this)))
+                            .bounds(this.width / 2 + 104, this.height / 4 + 48, 42, 20)
                             .build()
             );
         }

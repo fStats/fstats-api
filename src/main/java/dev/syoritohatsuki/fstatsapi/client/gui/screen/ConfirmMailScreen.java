@@ -2,57 +2,55 @@ package dev.syoritohatsuki.fstatsapi.client.gui.screen;
 
 import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
 public class ConfirmMailScreen extends ConfirmScreen {
-    private static final Text COPY = Text.translatable("chat.copy");
+    private static final Component COPY = Component.translatable("chat.copy");
     private final String mail;
-    private final boolean drawWarning;
+    private final boolean showWarning;
 
-    public ConfirmMailScreen(BooleanConsumer callback, String mail, boolean mailTrusted) {
-        this(callback, getConfirmText(mailTrusted), Text.literal(mail), mail, mailTrusted ? ScreenTexts.CANCEL : ScreenTexts.NO, mailTrusted);
-    }
-
-    public ConfirmMailScreen(BooleanConsumer callback, Text title, Text message, String mail, Text noText, boolean mailTrusted) {
+    public ConfirmMailScreen(BooleanConsumer callback, Component title, Component message, String mail, Component noText, boolean mailTrusted) {
         super(callback, title, message);
-        this.yesText = mailTrusted ? TextsWithFallbacks.MAIL_OPEN_TEXT : ScreenTexts.YES;
-        this.noText = noText;
-        this.drawWarning = !mailTrusted;
+        this.yesButtonComponent = mailTrusted ? TextsWithFallbacks.MAIL_OPEN_TEXT : CommonComponents.GUI_YES;
+        this.noButtonComponent = noText;
+        this.showWarning = !mailTrusted;
         this.mail = mail;
     }
 
-    protected static MutableText getConfirmText(boolean mailTrusted, String mail) {
-        return getConfirmText(mailTrusted).append(ScreenTexts.SPACE).append(Text.literal(mail));
-    }
-
-    protected static MutableText getConfirmText(boolean mailTrusted) {
-        return mailTrusted ? TextsWithFallbacks.MAIL_CONFIRM_TRUSTED_TEXT : TextsWithFallbacks.MAIL_CONFIRM_TEXT;
+    @Override
+    protected void addAdditionalText() {
+        if (this.showWarning) {
+            this.layout.addChild(new StringWidget(TextsWithFallbacks.MAIL_WARNING_TEXT, this.font));
+        }
     }
 
     @Override
-    protected void addButtons(DirectionalLayoutWidget layout) {
-        this.yesButton = layout.add(ButtonWidget.builder(this.yesText, button -> this.callback.accept(true)).width(100).build());
-        layout.add(ButtonWidget.builder(COPY, button -> {
-            this.client.keyboard.setClipboard(this.mail);
+    protected void addButtons(LinearLayout layout) {
+        this.yesButton = layout.addChild(Button.builder(this.yesButtonComponent, _ -> this.callback.accept(true)).width(100).build());
+        layout.addChild(Button.builder(COPY, _ -> {
+            this.minecraft.keyboardHandler.setClipboard(this.mail);
             this.callback.accept(false);
         }).width(100).build());
-        this.noButton = layout.add(ButtonWidget.builder(this.noText, button -> this.callback.accept(false)).width(100).build());
+        this.noButton = layout.addChild(Button.builder(this.noButtonComponent, _ -> this.callback.accept(false)).width(100).build());
     }
 
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        if (this.drawWarning) context.drawCenteredTextWithShadow(this.textRenderer, TextsWithFallbacks.MAIL_WARNING_TEXT, this.width / 2, 110, 16764108);
-    }
+    public static void open(Screen parent, String mail, boolean mailTrusted) {
+        Minecraft minecraft = Minecraft.getInstance();
+        minecraft.setScreen(new ConfirmLinkScreen(shouldOpen -> {
+            if (shouldOpen) {
+                Util.getPlatform().openUri("mailto:" + mail);
+            }
 
-    public static void open(String mail) {
-        Util.getOperatingSystem().open("mailto:" + mail);
+            minecraft.setScreen(parent);
+        }, "mailto:" + mail, mailTrusted));
     }
 }

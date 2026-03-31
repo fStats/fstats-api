@@ -1,16 +1,16 @@
 {
   "required": true,
   "package": "dev.syoritohatsuki.fstatsapi.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "client.ClientWorldMixin",
-    "client.MinecraftClientMixin",
+    "client.ClientLevelMixin",
+    "client.MinecraftMixin",
     "client.TitleScreenMixin"
   ],
   "server": [
-    "MinecraftDedicatedServerMixin"
+    "DedicatedServerMixin"
   ]
 }

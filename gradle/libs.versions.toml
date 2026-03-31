@@ -1,0 +1,13 @@
+[versions]
+fabric-loader = "0.18.5"
+fabric-loom = "1.15-SNAPSHOT"
+minecraft = "26.1"
+modmenu = "18.0.0-alpha.8"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
+
+[plugins]
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }

@@ -8,7 +8,7 @@ import dev.syoritohatsuki.fstatsapi.logs.LogManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
-import net.minecraft.server.dedicated.ServerPropertiesHandler;
+import net.minecraft.server.dedicated.DedicatedServerProperties;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,11 +30,11 @@ public class Request {
     }
 
     private static String getMinecraftVersion() {
-        return SharedConstants.getGameVersion().name();
+        return SharedConstants.getCurrentVersion().name();
     }
 
     private static Boolean getOnlineMode() {
-        if (isServerSide()) return ServerPropertiesHandler.load(Paths.get("server.properties")).onlineMode;
+        if (isServerSide()) return DedicatedServerProperties.fromFile(Paths.get("server.properties")).onlineMode;
         return SessionMonitor.isOnline();
     }
 

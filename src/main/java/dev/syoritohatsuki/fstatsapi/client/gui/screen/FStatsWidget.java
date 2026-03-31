@@ -4,15 +4,20 @@ import dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.AbstractTextAreaWidget;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.DoubleConsumer;
@@ -20,25 +25,29 @@ import java.util.function.DoubleConsumer;
 import static dev.syoritohatsuki.fstatsapi.client.util.TextsWithFallbacks.*;
 
 @Environment(EnvType.CLIENT)
-public class FStatsWidget extends ScrollableTextFieldWidget {
-    private static final int MARGIN_X = 32;
-    private static final Text PROPERTY_TITLE_TEXT = Text.translatable("telemetry_info.property_title").formatted(Formatting.UNDERLINE);
-    private final TextRenderer textRenderer;
-    private final FStatsWidget.Contents contents;
+public class FStatsWidget extends AbstractTextAreaWidget {
+    private static final Component PROPERTY_TITLE_TEXT = Component.translatable("telemetry_info.property_title").withStyle(ChatFormatting.UNDERLINE);
+    private final Font textRenderer;
+    private FStatsWidget.Content contents;
     @Nullable
     private DoubleConsumer scrollConsumer;
 
-    public FStatsWidget(int x, int y, int width, int height, TextRenderer textRenderer) {
-        super(x, y, width, height, Text.empty());
+    public FStatsWidget(int x, int y, int width, int height, Font textRenderer) {
+        super(x, y, width, height, Component.empty(), AbstractScrollArea.defaultSettings(9));
         this.textRenderer = textRenderer;
         this.contents = this.collectContents();
     }
 
-    private FStatsWidget.Contents collectContents() {
+    public void updateLayout() {
+        this.contents = this.collectContents();
+        this.refreshScrollAmount();
+    }
+
+    private FStatsWidget.Content collectContents() {
         FStatsWidget.ContentsBuilder contentsBuilder = new FStatsWidget.ContentsBuilder(this.getGridWidth());
 
         this.appendCollectableInfo(contentsBuilder);
-        contentsBuilder.appendSpace(9);
+        contentsBuilder.addSpacer(9);
         this.appendModsList(contentsBuilder);
 
         return contentsBuilder.build();
@@ -49,134 +58,132 @@ public class FStatsWidget extends ScrollableTextFieldWidget {
     }
 
     @Override
-    public void setScrollY(double scrollY) {
-        super.setScrollY(scrollY);
+    public void setScrollAmount(double scrollY) {
+        super.setScrollAmount(scrollY);
         if (this.scrollConsumer != null) {
-            this.scrollConsumer.accept(this.getScrollY());
+            this.scrollConsumer.accept(this.scrollAmount());
         }
     }
 
     @Override
-    protected int getContentsHeight() {
-        return this.contents.grid().getHeight();
+    protected int getInnerHeight() {
+        return this.contents.container().getHeight();
+    }
+
+    private int getGridWidth() {
+        return this.width - this.totalInnerPadding();
+    }
+
+
+    @Override
+    protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+        int top = this.getInnerTop();
+        int left = this.getInnerLeft();
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(left, top);
+        this.contents.container().visitWidgets(widget -> widget.extractRenderState(graphics, mouseX, mouseY, a));
+        graphics.pose().popMatrix();
     }
 
     @Override
-    protected double getDeltaYPerScroll() {
-        return 9.0;
-    }
-
-    @Override
-    protected void renderContents(DrawContext context, int mouseX, int mouseY, float delta) {
-        int xWithPadding = this.getX() + this.getPadding();
-        int yWithPadding = this.getY() + this.getPadding();
-        context.getMatrices().pushMatrix();
-        context.getMatrices().translate(xWithPadding, yWithPadding);
-        this.contents.grid().forEachChild(widget -> widget.render(context, mouseX, mouseY, delta));
-        context.getMatrices().popMatrix();
-    }
-
-    @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
-        builder.put(NarrationPart.TITLE, this.contents.narration());
+    protected void updateWidgetNarration(final NarrationElementOutput output) {
+        output.add(NarratedElementType.TITLE, this.contents.narration());
     }
 
     private void appendCollectableInfo(FStatsWidget.ContentsBuilder builder) {
-        builder.appendText(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_TEXT);
-        builder.appendText(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_DESCRIPTION_TEXT.formatted(Formatting.GRAY));
-        builder.appendSpace(9 / 2);
-        builder.appendTitle(this.textRenderer, PROPERTY_TITLE_TEXT, 2);
-        builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.COUNTRY_CODE_TEXT.formatted(Formatting.BLUE))
-                .append(ScreenTexts.SPACE)
-                .append(Text.literal("(")
+        builder.addHeader(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_TEXT);
+        builder.addHeader(this.textRenderer, TextsWithFallbacks.WORLD_EVENT_DESCRIPTION_TEXT.withStyle(ChatFormatting.GRAY));
+        builder.addSpacer(9 / 2);
+        builder.addLine(this.textRenderer, PROPERTY_TITLE_TEXT, 2);
+        builder.addLine(this.textRenderer, Component.literal(" - ")
+                .append(TextsWithFallbacks.COUNTRY_CODE_TEXT.withStyle(ChatFormatting.BLUE))
+                .append(CommonComponents.SPACE)
+                .append(Component.literal("(")
                         .append(IF_ALLOWED_TEXT)
-                        .append(Text.literal(")"))
-                        .formatted(Formatting.DARK_GRAY)
+                        .append(Component.literal(")"))
+                        .withStyle(ChatFormatting.DARK_GRAY)
                 )
         );
-        builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.FABRIC_API_VERSION_TEXT.formatted(Formatting.BLUE))
-                .append(ScreenTexts.SPACE)
-                .append(Text.literal("(")
+        builder.addLine(this.textRenderer, Component.literal(" - ")
+                .append(TextsWithFallbacks.FABRIC_API_VERSION_TEXT.withStyle(ChatFormatting.BLUE))
+                .append(CommonComponents.SPACE)
+                .append(Component.literal("(")
                         .append(IF_INSTALLED_TEXT)
-                        .append(Text.literal(")"))
-                        .formatted(Formatting.DARK_GRAY)
+                        .append(Component.literal(")"))
+                        .withStyle(ChatFormatting.DARK_GRAY)
                 )
         );
-        builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(TextsWithFallbacks.MOD_VERSION_TEXT.formatted(Formatting.BLUE)));
-        builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(MINECRAFT_VERSION_TEXT.formatted(Formatting.BLUE)));
-        builder.appendTitle(this.textRenderer, Text.literal(" - ")
-                .append(OPERATION_SYSTEM_TEXT.formatted(Formatting.BLUE))
-                .append(ScreenTexts.SPACE)
-                .append(Text.literal("(")
+        builder.addLine(this.textRenderer, Component.literal(" - ")
+                .append(TextsWithFallbacks.MOD_VERSION_TEXT.withStyle(ChatFormatting.BLUE)));
+        builder.addLine(this.textRenderer, Component.literal(" - ")
+                .append(MINECRAFT_VERSION_TEXT.withStyle(ChatFormatting.BLUE)));
+        builder.addLine(this.textRenderer, Component.literal(" - ")
+                .append(OPERATION_SYSTEM_TEXT.withStyle(ChatFormatting.BLUE))
+                .append(CommonComponents.SPACE)
+                .append(Component.literal("(")
                         .append(FIRST_LETTER_TEXT)
-                        .append(Text.literal(")"))
-                        .formatted(Formatting.DARK_GRAY)
+                        .append(Component.literal(")"))
+                        .withStyle(ChatFormatting.DARK_GRAY)
                 )
         );
     }
 
     private void appendModsList(FStatsWidget.ContentsBuilder builder) {
-        builder.appendText(this.textRenderer, MODS_USE_TEXT);
-        builder.appendSpace(9 / 2);
+        builder.addHeader(this.textRenderer, MODS_USE_TEXT);
+        builder.addSpacer(9 / 2);
         FabricLoader.getInstance()
                 .getAllMods()
                 .stream()
                 .filter(modContainer -> modContainer.getMetadata().getCustomValue("fstats") != null)
-                .forEach(modContainer -> builder.appendTitle(this.textRenderer, Text.literal(modContainer.getMetadata().getName())
-                        .append(Text.literal(" (" + modContainer.getMetadata().getId() + ")").formatted(Formatting.DARK_GRAY))
+                .forEach(modContainer -> builder.addLine(this.textRenderer, Component.literal(modContainer.getMetadata().getName())
+                        .append(Component.literal(" (" + modContainer.getMetadata().getId() + ")").withStyle(ChatFormatting.DARK_GRAY))
                 ));
     }
 
-    private int getGridWidth() {
-        return this.width - this.getPadding();
+    @Override
+    protected int innerPadding() {
+        return 8;
     }
 
     @Environment(EnvType.CLIENT)
-    record Contents(GridWidget grid, Text narration) {
+    record Content(Layout container, Component narration) {
     }
 
     @Environment(EnvType.CLIENT)
     static class ContentsBuilder {
-        private final int gridWidth;
-        private final GridWidget grid;
-        private final GridWidget.Adder widgetAdder;
-        private final Positioner positioner;
-        private final MutableText narration = Text.empty();
+        private final int width;
+        private final LinearLayout layout;
+        private final MutableComponent narration = Component.empty();
 
-        public ContentsBuilder(int gridWidth) {
-            this.gridWidth = gridWidth;
-            this.grid = new GridWidget();
-            this.grid.getMainPositioner().alignLeft();
-            this.widgetAdder = this.grid.createAdder(1);
-            this.widgetAdder.add(EmptyWidget.ofWidth(gridWidth));
-            this.positioner = this.widgetAdder.copyPositioner().alignHorizontalCenter().marginX(MARGIN_X);
+        public ContentsBuilder(int width) {
+            this.width = width;
+            this.layout = LinearLayout.vertical();
+            this.layout.defaultCellSetting().alignHorizontallyLeft();
+            this.layout.addChild(SpacerElement.width(width));
         }
 
-        public void appendTitle(TextRenderer textRenderer, Text title) {
-            this.appendTitle(textRenderer, title, 0);
+        public void addLine(final Font font, final Component line) {
+            this.addLine(font, line, 0);
         }
 
-        public void appendTitle(TextRenderer textRenderer, Text title, int marginBottom) {
-            this.widgetAdder.add(new MultilineTextWidget(title, textRenderer).setMaxWidth(this.gridWidth), this.widgetAdder.copyPositioner().marginBottom(marginBottom));
-            this.narration.append(title).append("\n");
+        public void addLine(final Font font, final Component line, final int paddingBottom) {
+            this.layout.addChild(new MultiLineTextWidget(line, font).setMaxWidth(this.width), s -> s.paddingBottom(paddingBottom));
+            this.narration.append(line).append("\n");
         }
 
-        public void appendText(TextRenderer textRenderer, Text text) {
-            this.widgetAdder.add(new MultilineTextWidget(text, textRenderer).setMaxWidth(this.gridWidth - 64).setCentered(true), this.positioner);
-            this.narration.append(text).append("\n");
+        public void addHeader(final Font font, final Component line) {
+            this.layout.addChild(new MultiLineTextWidget(line, font).setMaxWidth(this.width - 64)
+                    .setCentered(true), s -> s.alignHorizontallyCenter().paddingHorizontal(32));
+            this.narration.append(line).append("\n");
         }
 
-        public void appendSpace(int height) {
-            this.widgetAdder.add(EmptyWidget.ofHeight(height));
+        public void addSpacer(final int height) {
+            this.layout.addChild(SpacerElement.height(height));
         }
 
-        public FStatsWidget.Contents build() {
-            this.grid.refreshPositions();
-            return new FStatsWidget.Contents(this.grid, this.narration);
+        public FStatsWidget.Content build() {
+            this.layout.arrangeElements();
+            return new FStatsWidget.Content(this.layout, this.narration);
         }
     }
 }
